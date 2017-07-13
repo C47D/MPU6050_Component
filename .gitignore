@@ -2,6 +2,7 @@
 
 # Ignore test projects
 test_5lp.cydsn
+test_4m.cydsn
 
 # Ignore Archive directory, project bundles there
 Archive/*
