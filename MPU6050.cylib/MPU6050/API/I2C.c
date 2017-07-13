@@ -18,7 +18,9 @@
 
 #include "`$INSTANCE_NAME`_I2C.h"
 #include "`$I2C_INSTANCE`.h"
+#if defined(CY_SCB_`$I2C_INSTANCE`_H) // I2C based in the SCB block
 #include "`$I2C_INSTANCE`_I2C.h"
+#endif
 
 void `$INSTANCE_NAME`_ReadBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *value)
 {
