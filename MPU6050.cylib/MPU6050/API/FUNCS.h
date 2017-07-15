@@ -10,94 +10,94 @@
 uint8_t devAddr;
 uint8_t buffer[22];
 
-void `$INSTANCE_NAME`_init();
-void I2C_`$INSTANCE_NAME`_I2CAddress(uint8_t address);
+void `$INSTANCE_NAME`_init(void);
+void `$INSTANCE_NAME`_I2CAddress(uint8_t address);
 
-void `$INSTANCE_NAME`_initialize();
-bool `$INSTANCE_NAME`_testConnection();
+void `$INSTANCE_NAME`_initialize(void);
+bool `$INSTANCE_NAME`_testConnection(void);
 
 // AUX_VDDIO register
-uint8_t `$INSTANCE_NAME`_getAuxVDDIOLevel();
+uint8_t `$INSTANCE_NAME`_getAuxVDDIOLevel(void);
 void `$INSTANCE_NAME`_setAuxVDDIOLevel(uint8_t level);
 
 // SMPLRT_DIV register
-uint8_t `$INSTANCE_NAME`_getRate();
+uint8_t `$INSTANCE_NAME`_getRate(void);
 void `$INSTANCE_NAME`_setRate(uint8_t rate);
 
 // CONFIG register
-uint8_t `$INSTANCE_NAME`_getExternalFrameSync();
+uint8_t `$INSTANCE_NAME`_getExternalFrameSync(void);
 void `$INSTANCE_NAME`_setExternalFrameSync(uint8_t sync);
-uint8_t `$INSTANCE_NAME`_getDLPFMode();
+uint8_t `$INSTANCE_NAME`_getDLPFMode(void);
 void `$INSTANCE_NAME`_setDLPFMode(uint8_t bandwidth);
 
 // GYRO_CONFIG register
-uint8_t `$INSTANCE_NAME`_getFullScaleGyroRange();
+uint8_t `$INSTANCE_NAME`_getFullScaleGyroRange(void);
 void `$INSTANCE_NAME`_setFullScaleGyroRange(uint8_t range);
 
 // ACCEL_CONFIG register
-bool `$INSTANCE_NAME`_getAccelXSelfTest();
+bool `$INSTANCE_NAME`_getAccelXSelfTest(void);
 void `$INSTANCE_NAME`_setAccelXSelfTest(bool enabled);
-bool `$INSTANCE_NAME`_getAccelYSelfTest();
+bool `$INSTANCE_NAME`_getAccelYSelfTest(void);
 void `$INSTANCE_NAME`_setAccelYSelfTest(bool enabled);
-bool `$INSTANCE_NAME`_getAccelZSelfTest();
+bool `$INSTANCE_NAME`_getAccelZSelfTest(void);
 void `$INSTANCE_NAME`_setAccelZSelfTest(bool enabled);
-uint8_t `$INSTANCE_NAME`_getFullScaleAccelRange();
+uint8_t `$INSTANCE_NAME`_getFullScaleAccelRange(void);
 void `$INSTANCE_NAME`_setFullScaleAccelRange(uint8_t range);
-uint8_t `$INSTANCE_NAME`_getDHPFMode();
+uint8_t `$INSTANCE_NAME`_getDHPFMode(void);
 void `$INSTANCE_NAME`_setDHPFMode(uint8_t mode);
 
 // FF_THR register
-uint8_t `$INSTANCE_NAME`_getFreefallDetectionThreshold();
+uint8_t `$INSTANCE_NAME`_getFreefallDetectionThreshold(void);
 void `$INSTANCE_NAME`_setFreefallDetectionThreshold(uint8_t threshold);
 
 // FF_DUR register
-uint8_t `$INSTANCE_NAME`_getFreefallDetectionDuration();
+uint8_t `$INSTANCE_NAME`_getFreefallDetectionDuration(void);
 void `$INSTANCE_NAME`_setFreefallDetectionDuration(uint8_t duration);
 
 // MOT_THR register
-uint8_t `$INSTANCE_NAME`_getMotionDetectionThreshold();
+uint8_t `$INSTANCE_NAME`_getMotionDetectionThreshold(void);
 void `$INSTANCE_NAME`_setMotionDetectionThreshold(uint8_t threshold);
 
 // MOT_DUR register
-uint8_t `$INSTANCE_NAME`_getMotionDetectionDuration();
+uint8_t `$INSTANCE_NAME`_getMotionDetectionDuration(void);
 void `$INSTANCE_NAME`_setMotionDetectionDuration(uint8_t duration);
 
 // ZRMOT_THR register
-uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionThreshold();
+uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionThreshold(void);
 void `$INSTANCE_NAME`_setZeroMotionDetectionThreshold(uint8_t threshold);
 
 // ZRMOT_DUR register
-uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionDuration();
+uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionDuration(void);
 void `$INSTANCE_NAME`_setZeroMotionDetectionDuration(uint8_t duration);
 
 // FIFO_EN register
-bool `$INSTANCE_NAME`_getTempFIFOEnabled();
+bool `$INSTANCE_NAME`_getTempFIFOEnabled(void);
 void `$INSTANCE_NAME`_setTempFIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getXGyroFIFOEnabled();
+bool `$INSTANCE_NAME`_getXGyroFIFOEnabled(void);
 void `$INSTANCE_NAME`_setXGyroFIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getYGyroFIFOEnabled();
+bool `$INSTANCE_NAME`_getYGyroFIFOEnabled(void);
 void `$INSTANCE_NAME`_setYGyroFIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getZGyroFIFOEnabled();
+bool `$INSTANCE_NAME`_getZGyroFIFOEnabled(void);
 void `$INSTANCE_NAME`_setZGyroFIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getAccelFIFOEnabled();
+bool `$INSTANCE_NAME`_getAccelFIFOEnabled(void);
 void `$INSTANCE_NAME`_setAccelFIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getSlave2FIFOEnabled();
+bool `$INSTANCE_NAME`_getSlave2FIFOEnabled(void);
 void `$INSTANCE_NAME`_setSlave2FIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getSlave1FIFOEnabled();
+bool `$INSTANCE_NAME`_getSlave1FIFOEnabled(void);
 void `$INSTANCE_NAME`_setSlave1FIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getSlave0FIFOEnabled();
+bool `$INSTANCE_NAME`_getSlave0FIFOEnabled(void);
 void `$INSTANCE_NAME`_setSlave0FIFOEnabled(bool enabled);
 
 // I2C_MST_CTRL register
-bool `$INSTANCE_NAME`_getMultiMasterEnabled();
+bool `$INSTANCE_NAME`_getMultiMasterEnabled(void);
 void `$INSTANCE_NAME`_setMultiMasterEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getWaitForExternalSensorEnabled();
+bool `$INSTANCE_NAME`_getWaitForExternalSensorEnabled(void);
 void `$INSTANCE_NAME`_setWaitForExternalSensorEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getSlave3FIFOEnabled();
+bool `$INSTANCE_NAME`_getSlave3FIFOEnabled(void);
 void `$INSTANCE_NAME`_setSlave3FIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getSlaveReadWriteTransitionEnabled();
+bool `$INSTANCE_NAME`_getSlaveReadWriteTransitionEnabled(void);
 void `$INSTANCE_NAME`_setSlaveReadWriteTransitionEnabled(bool enabled);
-uint8_t `$INSTANCE_NAME`_getMasterClockSpeed();
+uint8_t `$INSTANCE_NAME`_getMasterClockSpeed(void);
 void `$INSTANCE_NAME`_setMasterClockSpeed(uint8_t speed);
 
 // I2C_SLV* registers (Slave 0-3)
@@ -117,73 +117,73 @@ uint8_t `$INSTANCE_NAME`_getSlaveDataLength(uint8_t num);
 void `$INSTANCE_NAME`_setSlaveDataLength(uint8_t num, uint8_t length);
 
 // I2C_SLV* registers (Slave 4)
-uint8_t `$INSTANCE_NAME`_getSlave4Address();
+uint8_t `$INSTANCE_NAME`_getSlave4Address(void);
 void `$INSTANCE_NAME`_setSlave4Address(uint8_t address);
-uint8_t `$INSTANCE_NAME`_getSlave4Register();
+uint8_t `$INSTANCE_NAME`_getSlave4Register(void);
 void `$INSTANCE_NAME`_setSlave4Register(uint8_t reg);
 void `$INSTANCE_NAME`_setSlave4OutputByte(uint8_t data);
-bool `$INSTANCE_NAME`_getSlave4Enabled();
+bool `$INSTANCE_NAME`_getSlave4Enabled(void);
 void `$INSTANCE_NAME`_setSlave4Enabled(bool enabled);
-bool `$INSTANCE_NAME`_getSlave4InterruptEnabled();
+bool `$INSTANCE_NAME`_getSlave4InterruptEnabled(void);
 void `$INSTANCE_NAME`_setSlave4InterruptEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getSlave4WriteMode();
+bool `$INSTANCE_NAME`_getSlave4WriteMode(void);
 void `$INSTANCE_NAME`_setSlave4WriteMode(bool mode);
-uint8_t `$INSTANCE_NAME`_getSlave4MasterDelay();
+uint8_t `$INSTANCE_NAME`_getSlave4MasterDelay(void);
 void `$INSTANCE_NAME`_setSlave4MasterDelay(uint8_t delay);
-uint8_t `$INSTANCE_NAME`_getSlate4InputByte();
+uint8_t `$INSTANCE_NAME`_getSlate4InputByte(void);
 
 // I2C_MST_STATUS register
-bool `$INSTANCE_NAME`_getPassthroughStatus();
-bool `$INSTANCE_NAME`_getSlave4IsDone();
-bool `$INSTANCE_NAME`_getLostArbitration();
-bool `$INSTANCE_NAME`_getSlave4Nack();
-bool `$INSTANCE_NAME`_getSlave3Nack();
-bool `$INSTANCE_NAME`_getSlave2Nack();
-bool `$INSTANCE_NAME`_getSlave1Nack();
-bool `$INSTANCE_NAME`_getSlave0Nack();
+bool `$INSTANCE_NAME`_getPassthroughStatus(void);
+bool `$INSTANCE_NAME`_getSlave4IsDone(void);
+bool `$INSTANCE_NAME`_getLostArbitration(void);
+bool `$INSTANCE_NAME`_getSlave4Nack(void);
+bool `$INSTANCE_NAME`_getSlave3Nack(void);
+bool `$INSTANCE_NAME`_getSlave2Nack(void);
+bool `$INSTANCE_NAME`_getSlave1Nack(void);
+bool `$INSTANCE_NAME`_getSlave0Nack(void);
 
 // INT_PIN_CFG register
-bool `$INSTANCE_NAME`_getInterruptMode();
+bool `$INSTANCE_NAME`_getInterruptMode(void);
 void `$INSTANCE_NAME`_setInterruptMode(bool mode);
-bool `$INSTANCE_NAME`_getInterruptDrive();
+bool `$INSTANCE_NAME`_getInterruptDrive(void);
 void `$INSTANCE_NAME`_setInterruptDrive(bool drive);
-bool `$INSTANCE_NAME`_getInterruptLatch();
+bool `$INSTANCE_NAME`_getInterruptLatch(void);
 void `$INSTANCE_NAME`_setInterruptLatch(bool latch);
-bool `$INSTANCE_NAME`_getInterruptLatchClear();
+bool `$INSTANCE_NAME`_getInterruptLatchClear(void);
 void `$INSTANCE_NAME`_setInterruptLatchClear(bool clear);
-bool `$INSTANCE_NAME`_getFSyncInterruptLevel();
+bool `$INSTANCE_NAME`_getFSyncInterruptLevel(void);
 void `$INSTANCE_NAME`_setFSyncInterruptLevel(bool level);
-bool `$INSTANCE_NAME`_getFSyncInterruptEnabled();
+bool `$INSTANCE_NAME`_getFSyncInterruptEnabled(void);
 void `$INSTANCE_NAME`_setFSyncInterruptEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getI2CBypassEnabled();
+bool `$INSTANCE_NAME`_getI2CBypassEnabled(void);
 void `$INSTANCE_NAME`_setI2CBypassEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getClockOutputEnabled();
+bool `$INSTANCE_NAME`_getClockOutputEnabled(void);
 void `$INSTANCE_NAME`_setClockOutputEnabled(bool enabled);
 
 // INT_ENABLE register
-uint8_t `$INSTANCE_NAME`_getIntEnabled();
+uint8_t `$INSTANCE_NAME`_getIntEnabled(void);
 void `$INSTANCE_NAME`_setIntEnabled(uint8_t enabled);
-bool `$INSTANCE_NAME`_getIntFreefallEnabled();
+bool `$INSTANCE_NAME`_getIntFreefallEnabled(void);
 void `$INSTANCE_NAME`_setIntFreefallEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getIntMotionEnabled();
+bool `$INSTANCE_NAME`_getIntMotionEnabled(void);
 void `$INSTANCE_NAME`_setIntMotionEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getIntZeroMotionEnabled();
+bool `$INSTANCE_NAME`_getIntZeroMotionEnabled(void);
 void `$INSTANCE_NAME`_setIntZeroMotionEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowEnabled();
+bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowEnabled(void);
 void `$INSTANCE_NAME`_setIntFIFOBufferOverflowEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getIntI2CMasterEnabled();
+bool `$INSTANCE_NAME`_getIntI2CMasterEnabled(void);
 void `$INSTANCE_NAME`_setIntI2CMasterEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getIntDataReadyEnabled();
+bool `$INSTANCE_NAME`_getIntDataReadyEnabled(void);
 void `$INSTANCE_NAME`_setIntDataReadyEnabled(bool enabled);
 
 // INT_STATUS register
-uint8_t `$INSTANCE_NAME`_getIntStatus();
-bool `$INSTANCE_NAME`_getIntFreefallStatus();
-bool `$INSTANCE_NAME`_getIntMotionStatus();
-bool `$INSTANCE_NAME`_getIntZeroMotionStatus();
-bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowStatus();
-bool `$INSTANCE_NAME`_getIntI2CMasterStatus();
-bool `$INSTANCE_NAME`_getIntDataReadyStatus();
+uint8_t `$INSTANCE_NAME`_getIntStatus(void);
+bool `$INSTANCE_NAME`_getIntFreefallStatus(void);
+bool `$INSTANCE_NAME`_getIntMotionStatus(void);
+bool `$INSTANCE_NAME`_getIntZeroMotionStatus(void);
+bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowStatus(void);
+bool `$INSTANCE_NAME`_getIntI2CMasterStatus(void);
+bool `$INSTANCE_NAME`_getIntDataReadyStatus(void);
 
 // ACCEL_*OUT_* registers
 void `$INSTANCE_NAME`_getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz);
@@ -191,18 +191,18 @@ void `$INSTANCE_NAME`_getMotion9t(int16_t* ax, int16_t* ay, int16_t* az, int16_t
 void `$INSTANCE_NAME`_getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz);
 void `$INSTANCE_NAME`_getMotion6t(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* t);
 void `$INSTANCE_NAME`_getAcceleration(int16_t* x, int16_t* y, int16_t* z);
-int16_t `$INSTANCE_NAME`_getAccelerationX();
-int16_t `$INSTANCE_NAME`_getAccelerationY();
-int16_t `$INSTANCE_NAME`_getAccelerationZ();
+int16_t `$INSTANCE_NAME`_getAccelerationX(void);
+int16_t `$INSTANCE_NAME`_getAccelerationY(void);
+int16_t `$INSTANCE_NAME`_getAccelerationZ(void);
 
 // TEMP_OUT_* registers
-int16_t `$INSTANCE_NAME`_getTemperature();
+int16_t `$INSTANCE_NAME`_getTemperature(void);
 
 // GYRO_*OUT_* registers
 void `$INSTANCE_NAME`_getRotation(int16_t* x, int16_t* y, int16_t* z);
-int16_t `$INSTANCE_NAME`_getRotationX();
-int16_t `$INSTANCE_NAME`_getRotationY();
-int16_t `$INSTANCE_NAME`_getRotationZ();
+int16_t `$INSTANCE_NAME`_getRotationX(void);
+int16_t `$INSTANCE_NAME`_getRotationY(void);
+int16_t `$INSTANCE_NAME`_getRotationZ(void);
 
 // EXT_SENS_DATA_* registers
 uint8_t `$INSTANCE_NAME`_getExternalSensorByte(int position);
@@ -210,159 +210,159 @@ uint16_t `$INSTANCE_NAME`_getExternalSensorWord(int position);
 uint32_t `$INSTANCE_NAME`_getExternalSensorDWord(int position);
 
 // MOT_DETECT_STATUS register
-bool `$INSTANCE_NAME`_getXNegMotionDetected();
-bool `$INSTANCE_NAME`_getXPosMotionDetected();
-bool `$INSTANCE_NAME`_getYNegMotionDetected();
-bool `$INSTANCE_NAME`_getYPosMotionDetected();
-bool `$INSTANCE_NAME`_getZNegMotionDetected();
-bool `$INSTANCE_NAME`_getZPosMotionDetected();
-bool `$INSTANCE_NAME`_getZeroMotionDetected();
+bool `$INSTANCE_NAME`_getXNegMotionDetected(void);
+bool `$INSTANCE_NAME`_getXPosMotionDetected(void);
+bool `$INSTANCE_NAME`_getYNegMotionDetected(void);
+bool `$INSTANCE_NAME`_getYPosMotionDetected(void);
+bool `$INSTANCE_NAME`_getZNegMotionDetected(void);
+bool `$INSTANCE_NAME`_getZPosMotionDetected(void);
+bool `$INSTANCE_NAME`_getZeroMotionDetected(void);
 
 // I2C_SLV*_DO register
 void `$INSTANCE_NAME`_setSlaveOutputByte(uint8_t num, uint8_t data);
 
 // I2C_MST_DELAY_CTRL register
-bool `$INSTANCE_NAME`_getExternalShadowDelayEnabled();
+bool `$INSTANCE_NAME`_getExternalShadowDelayEnabled(void);
 void `$INSTANCE_NAME`_setExternalShadowDelayEnabled(bool enabled);
 bool `$INSTANCE_NAME`_getSlaveDelayEnabled(uint8_t num);
 void `$INSTANCE_NAME`_setSlaveDelayEnabled(uint8_t num, bool enabled);
 
 // SIGNAL_PATH_RESET register
-void `$INSTANCE_NAME`_resetGyroscopePath();
-void `$INSTANCE_NAME`_resetAccelerometerPath();
-void `$INSTANCE_NAME`_resetTemperaturePath();
+void `$INSTANCE_NAME`_resetGyroscopePath(void);
+void `$INSTANCE_NAME`_resetAccelerometerPath(void);
+void `$INSTANCE_NAME`_resetTemperaturePath(void);
 
 // MOT_DETECT_CTRL register
-uint8_t `$INSTANCE_NAME`_getAccelerometerPowerOnDelay();
+uint8_t `$INSTANCE_NAME`_getAccelerometerPowerOnDelay(void);
 void `$INSTANCE_NAME`_setAccelerometerPowerOnDelay(uint8_t delay);
-uint8_t `$INSTANCE_NAME`_getFreefallDetectionCounterDecrement();
+uint8_t `$INSTANCE_NAME`_getFreefallDetectionCounterDecrement(void);
 void `$INSTANCE_NAME`_setFreefallDetectionCounterDecrement(uint8_t decrement);
-uint8_t `$INSTANCE_NAME`_getMotionDetectionCounterDecrement();
+uint8_t `$INSTANCE_NAME`_getMotionDetectionCounterDecrement(void);
 void `$INSTANCE_NAME`_setMotionDetectionCounterDecrement(uint8_t decrement);
 
 // USER_CTRL register
-bool `$INSTANCE_NAME`_getFIFOEnabled();
+bool `$INSTANCE_NAME`_getFIFOEnabled(void);
 void `$INSTANCE_NAME`_setFIFOEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getI2CMasterModeEnabled();
+bool `$INSTANCE_NAME`_getI2CMasterModeEnabled(void);
 void `$INSTANCE_NAME`_setI2CMasterModeEnabled(bool enabled);
 void `$INSTANCE_NAME`_switchSPIEnabled(bool enabled);
-void `$INSTANCE_NAME`_resetFIFO();
-void `$INSTANCE_NAME`_resetI2CMaster();
-void `$INSTANCE_NAME`_resetSensors();
+void `$INSTANCE_NAME`_resetFIFO(void);
+void `$INSTANCE_NAME`_resetI2CMaster(void);
+void `$INSTANCE_NAME`_resetSensors(void);
 
 // PWR_MGMT_1 register
-void `$INSTANCE_NAME`_reset();
-bool `$INSTANCE_NAME`_getSleepEnabled();
+void `$INSTANCE_NAME`_reset(void);
+bool `$INSTANCE_NAME`_getSleepEnabled(void);
 void `$INSTANCE_NAME`_setSleepEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getWakeCycleEnabled();
+bool `$INSTANCE_NAME`_getWakeCycleEnabled(void);
 void `$INSTANCE_NAME`_setWakeCycleEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getTempSensorEnabled();
+bool `$INSTANCE_NAME`_getTempSensorEnabled(void);
 void `$INSTANCE_NAME`_setTempSensorEnabled(bool enabled);
-uint8_t `$INSTANCE_NAME`_getClockSource();
+uint8_t `$INSTANCE_NAME`_getClockSource(void);
 void `$INSTANCE_NAME`_setClockSource(uint8_t source);
 
 // PWR_MGMT_2 register
-uint8_t `$INSTANCE_NAME`_getWakeFrequency();
+uint8_t `$INSTANCE_NAME`_getWakeFrequency(void);
 void `$INSTANCE_NAME`_setWakeFrequency(uint8_t frequency);
-bool `$INSTANCE_NAME`_getStandbyXAccelEnabled();
+bool `$INSTANCE_NAME`_getStandbyXAccelEnabled(void);
 void `$INSTANCE_NAME`_setStandbyXAccelEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getStandbyYAccelEnabled();
+bool `$INSTANCE_NAME`_getStandbyYAccelEnabled(void);
 void `$INSTANCE_NAME`_setStandbyYAccelEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getStandbyZAccelEnabled();
+bool `$INSTANCE_NAME`_getStandbyZAccelEnabled(void);
 void `$INSTANCE_NAME`_setStandbyZAccelEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getStandbyXGyroEnabled();
+bool `$INSTANCE_NAME`_getStandbyXGyroEnabled(void);
 void `$INSTANCE_NAME`_setStandbyXGyroEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getStandbyYGyroEnabled();
+bool `$INSTANCE_NAME`_getStandbyYGyroEnabled(void);
 void `$INSTANCE_NAME`_setStandbyYGyroEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getStandbyZGyroEnabled();
+bool `$INSTANCE_NAME`_getStandbyZGyroEnabled(void);
 void `$INSTANCE_NAME`_setStandbyZGyroEnabled(bool enabled);
 
 // FIFO_COUNT_* registers
-uint16_t `$INSTANCE_NAME`_getFIFOCount();
+uint16_t `$INSTANCE_NAME`_getFIFOCount(void);
 
 // FIFO_R_W register
-uint8_t `$INSTANCE_NAME`_getFIFOByte();
+uint8_t `$INSTANCE_NAME`_getFIFOByte(void);
 void `$INSTANCE_NAME`_setFIFOByte(uint8_t data);
 void `$INSTANCE_NAME`_getFIFOBytes(uint8_t *data, uint8_t length);
 
 // WHO_AM_I register
-uint8_t `$INSTANCE_NAME`_getDeviceID();
+uint8_t `$INSTANCE_NAME`_getDeviceID(void);
 void `$INSTANCE_NAME`_setDeviceID(uint8_t id);
 
 // ======== UNDOCUMENTED/DMP REGISTERS/METHODS ========
 
 // XG_OFFS_TC register
-uint8_t `$INSTANCE_NAME`_getOTPBankValid();
+uint8_t `$INSTANCE_NAME`_getOTPBankValid(void);
 void `$INSTANCE_NAME`_setOTPBankValid(bool enabled);
-int8_t `$INSTANCE_NAME`_getXGyroOffset();
+int8_t `$INSTANCE_NAME`_getXGyroOffset(void);
 void `$INSTANCE_NAME`_setXGyroOffset(int8_t offset);
 
 // YG_OFFS_TC register
-int8_t `$INSTANCE_NAME`_getYGyroOffset();
+int8_t `$INSTANCE_NAME`_getYGyroOffset(void);
 void `$INSTANCE_NAME`_setYGyroOffset(int8_t offset);
 
 // ZG_OFFS_TC register
-int8_t `$INSTANCE_NAME`_getZGyroOffset();
+int8_t `$INSTANCE_NAME`_getZGyroOffset(void);
 void `$INSTANCE_NAME`_setZGyroOffset(int8_t offset);
 
 // X_FINE_GAIN register
-int8_t `$INSTANCE_NAME`_getXFineGain();
+int8_t `$INSTANCE_NAME`_getXFineGain(void);
 void `$INSTANCE_NAME`_setXFineGain(int8_t gain);
 
 // Y_FINE_GAIN register
-int8_t `$INSTANCE_NAME`_getYFineGain();
+int8_t `$INSTANCE_NAME`_getYFineGain(void);
 void `$INSTANCE_NAME`_setYFineGain(int8_t gain);
 
 // Z_FINE_GAIN register
-int8_t `$INSTANCE_NAME`_getZFineGain();
+int8_t `$INSTANCE_NAME`_getZFineGain(void);
 void `$INSTANCE_NAME`_setZFineGain(int8_t gain);
 
 // XA_OFFS_* registers
-int16_t `$INSTANCE_NAME`_getXAccelOffset();
+int16_t `$INSTANCE_NAME`_getXAccelOffset(void);
 void `$INSTANCE_NAME`_setXAccelOffset(int16_t offset);
 
 // YA_OFFS_* register
-int16_t `$INSTANCE_NAME`_getYAccelOffset();
+int16_t `$INSTANCE_NAME`_getYAccelOffset(void);
 void `$INSTANCE_NAME`_setYAccelOffset(int16_t offset);
 
 // ZA_OFFS_* register
-int16_t `$INSTANCE_NAME`_getZAccelOffset();
+int16_t `$INSTANCE_NAME`_getZAccelOffset(void);
 void `$INSTANCE_NAME`_setZAccelOffset(int16_t offset);
 
 // XG_OFFS_USR* registers
-int16_t `$INSTANCE_NAME`_getXGyroOffsetUser();
+int16_t `$INSTANCE_NAME`_getXGyroOffsetUser(void);
 void `$INSTANCE_NAME`_setXGyroOffsetUser(int16_t offset);
 
 // YG_OFFS_USR* register
-int16_t `$INSTANCE_NAME`_getYGyroOffsetUser();
+int16_t `$INSTANCE_NAME`_getYGyroOffsetUser(void);
 void `$INSTANCE_NAME`_setYGyroOffsetUser(int16_t offset);
 
 // ZG_OFFS_USR* register
-int16_t `$INSTANCE_NAME`_getZGyroOffsetUser();
+int16_t `$INSTANCE_NAME`_getZGyroOffsetUser(void);
 void `$INSTANCE_NAME`_setZGyroOffsetUser(int16_t offset);
 
 // INT_ENABLE register (DMP functions)
-bool `$INSTANCE_NAME`_getIntPLLReadyEnabled();
+bool `$INSTANCE_NAME`_getIntPLLReadyEnabled(void);
 void `$INSTANCE_NAME`_setIntPLLReadyEnabled(bool enabled);
-bool `$INSTANCE_NAME`_getIntDMPEnabled();
+bool `$INSTANCE_NAME`_getIntDMPEnabled(void);
 void `$INSTANCE_NAME`_setIntDMPEnabled(bool enabled);
 
 // DMP_INT_STATUS
-bool `$INSTANCE_NAME`_getDMPInt5Status();
-bool `$INSTANCE_NAME`_getDMPInt4Status();
-bool `$INSTANCE_NAME`_getDMPInt3Status();
-bool `$INSTANCE_NAME`_getDMPInt2Status();
-bool `$INSTANCE_NAME`_getDMPInt1Status();
-bool `$INSTANCE_NAME`_getDMPInt0Status();
+bool `$INSTANCE_NAME`_getDMPInt5Status(void);
+bool `$INSTANCE_NAME`_getDMPInt4Status(void);
+bool `$INSTANCE_NAME`_getDMPInt3Status(void);
+bool `$INSTANCE_NAME`_getDMPInt2Status(void);
+bool `$INSTANCE_NAME`_getDMPInt1Status(void);
+bool `$INSTANCE_NAME`_getDMPInt0Status(void);
 
 // INT_STATUS register (DMP functions)
-bool `$INSTANCE_NAME`_getIntPLLReadyStatus();
-bool `$INSTANCE_NAME`_getIntDMPStatus();
+bool `$INSTANCE_NAME`_getIntPLLReadyStatus(void);
+bool `$INSTANCE_NAME`_getIntDMPStatus(void);
 
 // USER_CTRL register (DMP functions)
-bool `$INSTANCE_NAME`_getDMPEnabled();
+bool `$INSTANCE_NAME`_getDMPEnabled(void);
 void `$INSTANCE_NAME`_setDMPEnabled(bool enabled);
-void `$INSTANCE_NAME`_resetDMP();
+void `$INSTANCE_NAME`_resetDMP(void);
 
 // BANK_SEL register
 void `$INSTANCE_NAME`_setMemoryBank(uint8_t bank, bool prefetchEnabled, bool userBank);
@@ -371,7 +371,7 @@ void `$INSTANCE_NAME`_setMemoryBank(uint8_t bank, bool prefetchEnabled, bool use
 void `$INSTANCE_NAME`_setMemoryStartAddress(uint8_t address);
 
 // MEM_R_W register
-uint8_t `$INSTANCE_NAME`_readMemoryByte();
+uint8_t `$INSTANCE_NAME`_readMemoryByte(void);
 void `$INSTANCE_NAME`_writeMemoryByte(uint8_t data);
 void `$INSTANCE_NAME`_readMemoryBlock(uint8_t *data, uint16_t dataSize, uint8_t bank, uint8_t address);
 bool `$INSTANCE_NAME`_writeMemoryBlock(const uint8_t *data, uint16_t dataSize, uint8_t bank, uint8_t address, bool verify, bool useProgMem);
@@ -381,34 +381,34 @@ bool `$INSTANCE_NAME`_writeDMPConfigurationSet(const uint8_t *data, uint16_t dat
 bool `$INSTANCE_NAME`_writeProgDMPConfigurationSet(const uint8_t *data, uint16_t dataSize);
 
 // DMP_CFG_1 register
-uint8_t `$INSTANCE_NAME`_getDMPConfig1();
+uint8_t `$INSTANCE_NAME`_getDMPConfig1(void);
 void `$INSTANCE_NAME`_setDMPConfig1(uint8_t config);
 
 // DMP_CFG_2 register
-uint8_t `$INSTANCE_NAME`_getDMPConfig2();
+uint8_t `$INSTANCE_NAME`_getDMPConfig2(void);
 void `$INSTANCE_NAME`_setDMPConfig2(uint8_t config);
 
 //Magnetometer initialization
-void `$INSTANCE_NAME`_setup_compass();
+void `$INSTANCE_NAME`_setup_compass(void);
 
 // special methods for MotionApps 2.0 implementation
 #ifdef `$INSTANCE_NAME`_INCLUDE_DMP_MOTIONAPPS20
 	uint8_t *dmpPacketBuffer;
 	uint16_t dmpPacketSize;
 
-	uint8_t `$INSTANCE_NAME`_dmpInitialize();
-	bool `$INSTANCE_NAME`_dmpPacketAvailable();
+	uint8_t `$INSTANCE_NAME`_dmpInitialize(void);
+	bool `$INSTANCE_NAME`_dmpPacketAvailable(void);
 
 	uint8_t `$INSTANCE_NAME`_dmpSetFIFORate(uint8_t fifoRate);
-	uint8_t `$INSTANCE_NAME`_dmpGetFIFORate();
-	uint8_t `$INSTANCE_NAME`_dmpGetSampleStepSizeMS();
-	uint8_t `$INSTANCE_NAME`_dmpGetSampleFrequency();
+	uint8_t `$INSTANCE_NAME`_dmpGetFIFORate(void);
+	uint8_t `$INSTANCE_NAME`_dmpGetSampleStepSizeMS(void);
+	uint8_t `$INSTANCE_NAME`_dmpGetSampleFrequency(void);
 	int32_t `$INSTANCE_NAME`_dmpDecodeTemperature(int8_t tempReg);
 	
 	// Register callbacks after a packet of FIFO data is processed
 	//uint8_t `$INSTANCE_NAME`_dmpRegisterFIFORateProcess(inv_obj_func func, int16_t priority);
 	//uint8_t `$INSTANCE_NAME`_dmpUnregisterFIFORateProcess(inv_obj_func func);
-	uint8_t `$INSTANCE_NAME`_dmpRunFIFORateProcesses();
+	uint8_t `$INSTANCE_NAME`_dmpRunFIFORateProcesses(void);
 	
 	// Setup FIFO for various output
 	uint8_t `$INSTANCE_NAME`_dmpSendQuaternion(uint_fast16_t accuracy);
@@ -482,14 +482,14 @@ void `$INSTANCE_NAME`_setup_compass();
 
 	uint8_t `$INSTANCE_NAME`_dmpSetFIFOProcessedCallback(void (*func) (void));
 
-	uint8_t `$INSTANCE_NAME`_dmpInitFIFOParam();
-	uint8_t `$INSTANCE_NAME`_dmpCloseFIFO();
+	uint8_t `$INSTANCE_NAME`_dmpInitFIFOParam(void);
+	uint8_t `$INSTANCE_NAME`_dmpCloseFIFO(void);
 	uint8_t `$INSTANCE_NAME`_dmpSetGyroDataSource(uint8_t source);
-	uint8_t `$INSTANCE_NAME`_dmpDecodeQuantizedAccel();
-	uint32_t `$INSTANCE_NAME`_dmpGetGyroSumOfSquare();
-	uint32_t `$INSTANCE_NAME`_dmpGetAccelSumOfSquare();
+	uint8_t `$INSTANCE_NAME`_dmpDecodeQuantizedAccel(void);
+	uint32_t `$INSTANCE_NAME`_dmpGetGyroSumOfSquare(void);
+	uint32_t `$INSTANCE_NAME`_dmpGetAccelSumOfSquare(void);
 	void `$INSTANCE_NAME`_dmpOverrideQuaternion(long *q);
-	uint16_t `$INSTANCE_NAME`_dmpGetFIFOPacketSize();
+	uint16_t `$INSTANCE_NAME`_dmpGetFIFOPacketSize(void);
 #endif
 
 // special methods for MotionApps 4.1 implementation
@@ -497,19 +497,19 @@ void `$INSTANCE_NAME`_setup_compass();
 	uint8_t *dmpPacketBuffer;
 	uint16_t dmpPacketSize;
 
-	uint8_t `$INSTANCE_NAME`_dmpInitialize();
-	bool `$INSTANCE_NAME`_dmpPacketAvailable();
+	uint8_t `$INSTANCE_NAME`_dmpInitialize(void);
+	bool `$INSTANCE_NAME`_dmpPacketAvailable(void);
 
 	uint8_t `$INSTANCE_NAME`_dmpSetFIFORate(uint8_t fifoRate);
-	uint8_t `$INSTANCE_NAME`_dmpGetFIFORate();
-	uint8_t `$INSTANCE_NAME`_dmpGetSampleStepSizeMS();
-	uint8_t `$INSTANCE_NAME`_dmpGetSampleFrequency();
+	uint8_t `$INSTANCE_NAME`_dmpGetFIFORate(void);
+	uint8_t `$INSTANCE_NAME`_dmpGetSampleStepSizeMS(void);
+	uint8_t `$INSTANCE_NAME`_dmpGetSampleFrequency(void);
 	int32_t `$INSTANCE_NAME`_dmpDecodeTemperature(int8_t tempReg);
 	
 	// Register callbacks after a packet of FIFO data is processed
 	//uint8_t `$INSTANCE_NAME`_dmpRegisterFIFORateProcess(inv_obj_func func, int16_t priority);
 	//uint8_t `$INSTANCE_NAME`_dmpUnregisterFIFORateProcess(inv_obj_func func);
-	uint8_t `$INSTANCE_NAME`_dmpRunFIFORateProcesses();
+	uint8_t `$INSTANCE_NAME`_dmpRunFIFORateProcesses(void);
 	
 	// Setup FIFO for various output
 	uint8_t `$INSTANCE_NAME`_dmpSendQuaternion(uint_fast16_t accuracy);
@@ -584,14 +584,14 @@ void `$INSTANCE_NAME`_setup_compass();
 
 	uint8_t `$INSTANCE_NAME`_dmpSetFIFOProcessedCallback(void (*func) (void));
 
-	uint8_t `$INSTANCE_NAME`_dmpInitFIFOParam();
-	uint8_t `$INSTANCE_NAME`_dmpCloseFIFO();
+	uint8_t `$INSTANCE_NAME`_dmpInitFIFOParam(void);
+	uint8_t `$INSTANCE_NAME`_dmpCloseFIFO(void);
 	uint8_t `$INSTANCE_NAME`_dmpSetGyroDataSource(uint8_t source);
-	uint8_t `$INSTANCE_NAME`_dmpDecodeQuantizedAccel();
-	uint32_t `$INSTANCE_NAME`_dmpGetGyroSumOfSquare();
-	uint32_t `$INSTANCE_NAME`_dmpGetAccelSumOfSquare();
+	uint8_t `$INSTANCE_NAME`_dmpDecodeQuantizedAccel(void);
+	uint32_t `$INSTANCE_NAME`_dmpGetGyroSumOfSquare(void);
+	uint32_t `$INSTANCE_NAME`_dmpGetAccelSumOfSquare(void);
 	void `$INSTANCE_NAME`_dmpOverrideQuaternion(long *q);
-	uint16_t `$INSTANCE_NAME`_dmpGetFIFOPacketSize();
+	uint16_t `$INSTANCE_NAME`_dmpGetFIFOPacketSize(void);
 #endif
 
 #endif
