@@ -7,13 +7,12 @@
 #include <stdbool.h>
 
 /* Function declarations */
-uint8_t devAddr;
-uint8_t buffer[22];
+extern uint8_t buffer[22];
 
-void `$INSTANCE_NAME`_init(void);
+void `$INSTANCE_NAME`_start(void);
 void `$INSTANCE_NAME`_I2CAddress(uint8_t address);
 
-void `$INSTANCE_NAME`_initialize(void);
+void `$INSTANCE_NAME`_init(void);
 bool `$INSTANCE_NAME`_testConnection(void);
 
 // AUX_VDDIO register

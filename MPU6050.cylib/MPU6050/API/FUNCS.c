@@ -1,16 +1,35 @@
-#include "`$INSTANCE_NAME`_I2C.h"
+#include "project.h"
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "`$INSTANCE_NAME`_LL_I2C.h"
 #include "`$INSTANCE_NAME`_REGS.h"
 #include "`$INSTANCE_NAME`_FUNCS.h"
 
-#include "cytypes.h"
-#include <stdbool.h>
+uint8_t buffer[22];
 
 /** Default constructor, uses default I2C address.
  * @see `$INSTANCE_NAME`_DEFAULT_ADDRESS
  */
+void `$INSTANCE_NAME`_start(void)
+{
+    `$I2C_INSTANCE`_Start();
+    `$INSTANCE_NAME`_init();
+}
+
+/** Power on and prepare for general usage.
+ * This will activate the device and take it out of sleep mode (which must be done
+ * after start-up). This function also sets both the accelerometer and the gyroscope
+ * to their most sensitive settings, namely +/- 2g and +/- 250 degrees/sec, and sets
+ * the clock source to use the X Gyro for reference, which is slightly better than
+ * the default internal clock source.
+ */
 void `$INSTANCE_NAME`_init(void)
 {
-    devAddr = `$INSTANCE_NAME`_DEFAULT_ADDRESS;
+    `$INSTANCE_NAME`_setClockSource(`$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_XAXIS);
+    `$INSTANCE_NAME`_setFullScaleGyroRange(`$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_250);
+    `$INSTANCE_NAME`_setFullScaleAccelRange(`$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_2G);
+    `$INSTANCE_NAME`_setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
 }
 
 /** Specific address constructor.
@@ -21,22 +40,7 @@ void `$INSTANCE_NAME`_init(void)
  */
 void `$INSTANCE_NAME`_I2CAddress(uint8_t address)
 {
-    devAddr = address;
-}
-
-/** Power on and prepare for general usage.
- * This will activate the device and take it out of sleep mode (which must be done
- * after start-up). This function also sets both the accelerometer and the gyroscope
- * to their most sensitive settings, namely +/- 2g and +/- 250 degrees/sec, and sets
- * the clock source to use the X Gyro for reference, which is slightly better than
- * the default internal clock source.
- */
-void `$INSTANCE_NAME`_initialize(void)
-{
-    `$INSTANCE_NAME`_setClockSource(`$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_XAXIS);
-    `$INSTANCE_NAME`_setFullScaleGyroRange(`$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_250);
-    `$INSTANCE_NAME`_setFullScaleAccelRange(`$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_2G);
-    `$INSTANCE_NAME`_setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
+    `$INSTANCE_NAME`_devAddr = address;
 }
 
 /** Verify the I2C connection.
@@ -58,7 +62,7 @@ bool `$INSTANCE_NAME`_testConnection(void)
  */
 uint8_t `$INSTANCE_NAME`_getAuxVDDIOLevel(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_PWR_MODE_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_PWR_MODE_Pos, buffer);
     return buffer[0];
 }
 /** Set the auxiliary I2C supply voltage level.
@@ -69,7 +73,7 @@ uint8_t `$INSTANCE_NAME`_getAuxVDDIOLevel(void)
  */
 void `$INSTANCE_NAME`_setAuxVDDIOLevel(uint8_t level)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_PWR_MODE_Pos, level);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_PWR_MODE_Pos, level);
 }
 
 // SMPLRT_DIV register
@@ -97,7 +101,7 @@ void `$INSTANCE_NAME`_setAuxVDDIOLevel(uint8_t level)
  */
 uint8_t `$INSTANCE_NAME`_getRate(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_SMPLRT_DIV, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_SMPLRT_DIV, buffer);
     return buffer[0];
 }
 /** Set gyroscope sample rate divider.
@@ -107,7 +111,7 @@ uint8_t `$INSTANCE_NAME`_getRate(void)
  */
 void `$INSTANCE_NAME`_setRate(uint8_t rate)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_SMPLRT_DIV, rate);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_SMPLRT_DIV, rate);
 }
 
 // CONFIG register
@@ -141,7 +145,7 @@ void `$INSTANCE_NAME`_setRate(uint8_t rate)
  */
 uint8_t `$INSTANCE_NAME`_getExternalFrameSync(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Pos, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Pos, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Len, buffer);
     return buffer[0];
 }
 /** Set external FSYNC configuration.
@@ -151,7 +155,7 @@ uint8_t `$INSTANCE_NAME`_getExternalFrameSync(void)
  */
 void `$INSTANCE_NAME`_setExternalFrameSync(uint8_t sync)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Pos, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Len, sync);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Pos, `$INSTANCE_NAME`_CONFIG_EXT_SYNC_SET_Len, sync);
 }
 /** Get digital low-pass filter configuration.
  * The DLPF_CFG parameter sets the digital low pass filter configuration. It
@@ -183,7 +187,7 @@ void `$INSTANCE_NAME`_setExternalFrameSync(uint8_t sync)
  */
 uint8_t `$INSTANCE_NAME`_getDLPFMode(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Pos, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Pos, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Len, buffer);
     return buffer[0];
 }
 /** Set digital low-pass filter configuration.
@@ -196,7 +200,7 @@ uint8_t `$INSTANCE_NAME`_getDLPFMode(void)
  */
 void `$INSTANCE_NAME`_setDLPFMode(uint8_t mode)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Pos, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Len, mode);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_CONFIG, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Pos, `$INSTANCE_NAME`_CONFIG_DLPF_CFG_Len, mode);
 }
 
 // GYRO_CONFIG register
@@ -220,7 +224,7 @@ void `$INSTANCE_NAME`_setDLPFMode(uint8_t mode)
  */
 uint8_t `$INSTANCE_NAME`_getFullScaleGyroRange(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_GYRO_CONFIG, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Pos, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_GYRO_CONFIG, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Pos, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Len, buffer);
     return buffer[0];
 }
 /** Set full-scale gyroscope range.
@@ -233,7 +237,7 @@ uint8_t `$INSTANCE_NAME`_getFullScaleGyroRange(void)
  */
 void `$INSTANCE_NAME`_setFullScaleGyroRange(uint8_t range)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_GYRO_CONFIG, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Pos, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Len, range);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_GYRO_CONFIG, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Pos, `$INSTANCE_NAME`_GYRO_CONFIG_FS_SEL_Len, range);
 }
 
 // ACCEL_CONFIG register
@@ -244,7 +248,7 @@ void `$INSTANCE_NAME`_setFullScaleGyroRange(uint8_t range)
  */
 bool `$INSTANCE_NAME`_getAccelXSelfTest(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_XA_ST_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_XA_ST_Pos, buffer);
     return buffer[0];
 }
 /** Set self-test enabled setting for accelerometer X axis.
@@ -253,7 +257,7 @@ bool `$INSTANCE_NAME`_getAccelXSelfTest(void)
  */
 void `$INSTANCE_NAME`_setAccelXSelfTest(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_XA_ST_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_XA_ST_Pos, enabled);
 }
 /** Get self-test enabled value for accelerometer Y axis.
  * @return Self-test enabled value
@@ -261,7 +265,7 @@ void `$INSTANCE_NAME`_setAccelXSelfTest(bool enabled)
  */
 bool `$INSTANCE_NAME`_getAccelYSelfTest(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_YA_ST_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_YA_ST_Pos, buffer);
     return buffer[0];
 }
 /** Set self-test enabled value for accelerometer Y axis.
@@ -270,7 +274,7 @@ bool `$INSTANCE_NAME`_getAccelYSelfTest(void)
  */
 void `$INSTANCE_NAME`_setAccelYSelfTest(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_YA_ST_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_YA_ST_Pos, enabled);
 }
 /** Get self-test enabled value for accelerometer Z axis.
  * @return Self-test enabled value
@@ -278,7 +282,7 @@ void `$INSTANCE_NAME`_setAccelYSelfTest(bool enabled)
  */
 bool `$INSTANCE_NAME`_getAccelZSelfTest(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_ZA_ST_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_ZA_ST_Pos, buffer);
     return buffer[0];
 }
 /** Set self-test enabled value for accelerometer Z axis.
@@ -287,7 +291,7 @@ bool `$INSTANCE_NAME`_getAccelZSelfTest(void)
  */
 void `$INSTANCE_NAME`_setAccelZSelfTest(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_ZA_ST_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_ZA_ST_Pos, enabled);
 }
 /** Get full-scale accelerometer range.
  * The FS_SEL parameter allows setting the full-scale range of the accelerometer
@@ -308,7 +312,7 @@ void `$INSTANCE_NAME`_setAccelZSelfTest(bool enabled)
  */
 uint8_t `$INSTANCE_NAME`_getFullScaleAccelRange(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Len, buffer);
     return buffer[0];
 }
 /** Set full-scale accelerometer range.
@@ -317,7 +321,7 @@ uint8_t `$INSTANCE_NAME`_getFullScaleAccelRange(void)
  */
 void `$INSTANCE_NAME`_setFullScaleAccelRange(uint8_t range)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Len, range);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_AFS_SEL_Len, range);
 }
 /** Get the high-pass filter configuration.
  * The DHPF is a filter module in the path leading to motion detectors (Free
@@ -356,7 +360,7 @@ void `$INSTANCE_NAME`_setFullScaleAccelRange(uint8_t range)
  */
 uint8_t `$INSTANCE_NAME`_getDHPFMode(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Len, buffer);
     return buffer[0];
 }
 /** Set the high-pass filter configuration.
@@ -367,7 +371,7 @@ uint8_t `$INSTANCE_NAME`_getDHPFMode(void)
  */
 void `$INSTANCE_NAME`_setDHPFMode(uint8_t bandwidth)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Len, bandwidth);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_ACCEL_CONFIG, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Pos, `$INSTANCE_NAME`_ACCEL_CONFIG_HPF_Len, bandwidth);
 }
 
 // FF_THR register
@@ -389,7 +393,7 @@ void `$INSTANCE_NAME`_setDHPFMode(uint8_t bandwidth)
  */
 uint8_t `$INSTANCE_NAME`_getFreefallDetectionThreshold(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_FF_THR, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_FF_THR, buffer);
     return buffer[0];
 }
 /** Get free-fall event acceleration threshold.
@@ -399,7 +403,7 @@ uint8_t `$INSTANCE_NAME`_getFreefallDetectionThreshold(void)
  */
 void `$INSTANCE_NAME`_setFreefallDetectionThreshold(uint8_t threshold)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_FF_THR, threshold);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_FF_THR, threshold);
 }
 
 // FF_DUR register
@@ -423,7 +427,7 @@ void `$INSTANCE_NAME`_setFreefallDetectionThreshold(uint8_t threshold)
  */
 uint8_t `$INSTANCE_NAME`_getFreefallDetectionDuration(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_FF_DUR, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_FF_DUR, buffer);
     return buffer[0];
 }
 /** Get free-fall event duration threshold.
@@ -433,7 +437,7 @@ uint8_t `$INSTANCE_NAME`_getFreefallDetectionDuration(void)
  */
 void `$INSTANCE_NAME`_setFreefallDetectionDuration(uint8_t duration)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_FF_DUR, duration);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_FF_DUR, duration);
 }
 
 // MOT_THR register
@@ -459,7 +463,7 @@ void `$INSTANCE_NAME`_setFreefallDetectionDuration(uint8_t duration)
  */
 uint8_t `$INSTANCE_NAME`_getMotionDetectionThreshold(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_MOT_THR, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_MOT_THR, buffer);
     return buffer[0];
 }
 /** Set free-fall event acceleration threshold.
@@ -469,7 +473,7 @@ uint8_t `$INSTANCE_NAME`_getMotionDetectionThreshold(void)
  */
 void `$INSTANCE_NAME`_setMotionDetectionThreshold(uint8_t threshold)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_MOT_THR, threshold);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_MOT_THR, threshold);
 }
 
 // MOT_DUR register
@@ -491,7 +495,7 @@ void `$INSTANCE_NAME`_setMotionDetectionThreshold(uint8_t threshold)
  */
 uint8_t `$INSTANCE_NAME`_getMotionDetectionDuration(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_MOT_DUR, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_MOT_DUR, buffer);
     return buffer[0];
 }
 /** Set motion detection event duration threshold.
@@ -501,7 +505,7 @@ uint8_t `$INSTANCE_NAME`_getMotionDetectionDuration(void)
  */
 void `$INSTANCE_NAME`_setMotionDetectionDuration(uint8_t duration)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_MOT_DUR, duration);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_MOT_DUR, duration);
 }
 
 // ZRMOT_THR register
@@ -533,7 +537,7 @@ void `$INSTANCE_NAME`_setMotionDetectionDuration(uint8_t duration)
  */
 uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionThreshold(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_ZRMOT_THR, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_ZRMOT_THR, buffer);
     return buffer[0];
 }
 /** Set zero motion detection event acceleration threshold.
@@ -543,7 +547,7 @@ uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionThreshold(void)
  */
 void `$INSTANCE_NAME`_setZeroMotionDetectionThreshold(uint8_t threshold)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_ZRMOT_THR, threshold);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_ZRMOT_THR, threshold);
 }
 
 // ZRMOT_DUR register
@@ -566,7 +570,7 @@ void `$INSTANCE_NAME`_setZeroMotionDetectionThreshold(uint8_t threshold)
  */
 uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionDuration(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_ZRMOT_DUR, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_ZRMOT_DUR, buffer);
     return buffer[0];
 }
 /** Set zero motion detection event duration threshold.
@@ -576,7 +580,7 @@ uint8_t `$INSTANCE_NAME`_getZeroMotionDetectionDuration(void)
  */
 void `$INSTANCE_NAME`_setZeroMotionDetectionDuration(uint8_t duration)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_ZRMOT_DUR, duration);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_ZRMOT_DUR, duration);
 }
 
 // FIFO_EN register
@@ -589,7 +593,7 @@ void `$INSTANCE_NAME`_setZeroMotionDetectionDuration(uint8_t duration)
  */
 bool `$INSTANCE_NAME`_getTempFIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_TEMP_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_TEMP_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set temperature FIFO enabled value.
@@ -599,7 +603,7 @@ bool `$INSTANCE_NAME`_getTempFIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setTempFIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_TEMP_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_TEMP_FIFO_EN_Pos, enabled);
 }
 /** Get gyroscope X-axis FIFO enabled value.
  * When set to 1, this bit enables GYRO_XOUT_H and GYRO_XOUT_L (Registers 67 and
@@ -609,7 +613,7 @@ void `$INSTANCE_NAME`_setTempFIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getXGyroFIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_XG_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_XG_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set gyroscope X-axis FIFO enabled value.
@@ -619,7 +623,7 @@ bool `$INSTANCE_NAME`_getXGyroFIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setXGyroFIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_XG_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_XG_FIFO_EN_Pos, enabled);
 }
 /** Get gyroscope Y-axis FIFO enabled value.
  * When set to 1, this bit enables GYRO_YOUT_H and GYRO_YOUT_L (Registers 69 and
@@ -629,7 +633,7 @@ void `$INSTANCE_NAME`_setXGyroFIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getYGyroFIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_YG_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_YG_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set gyroscope Y-axis FIFO enabled value.
@@ -639,7 +643,7 @@ bool `$INSTANCE_NAME`_getYGyroFIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setYGyroFIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_YG_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_YG_FIFO_EN_Pos, enabled);
 }
 /** Get gyroscope Z-axis FIFO enabled value.
  * When set to 1, this bit enables GYRO_ZOUT_H and GYRO_ZOUT_L (Registers 71 and
@@ -649,7 +653,7 @@ void `$INSTANCE_NAME`_setYGyroFIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getZGyroFIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ZG_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ZG_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set gyroscope Z-axis FIFO enabled value.
@@ -659,7 +663,7 @@ bool `$INSTANCE_NAME`_getZGyroFIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setZGyroFIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ZG_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ZG_FIFO_EN_Pos, enabled);
 }
 /** Get accelerometer FIFO enabled value.
  * When set to 1, this bit enables ACCEL_XOUT_H, ACCEL_XOUT_L, ACCEL_YOUT_H,
@@ -670,7 +674,7 @@ void `$INSTANCE_NAME`_setZGyroFIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getAccelFIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ACCEL_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ACCEL_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set accelerometer FIFO enabled value.
@@ -680,7 +684,7 @@ bool `$INSTANCE_NAME`_getAccelFIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setAccelFIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ACCEL_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_ACCEL_FIFO_EN_Pos, enabled);
 }
 /** Get Slave 2 FIFO enabled value.
  * When set to 1, this bit enables EXT_SENS_DATA registers (Registers 73 to 96)
@@ -690,7 +694,7 @@ void `$INSTANCE_NAME`_setAccelFIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getSlave2FIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV2_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV2_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Slave 2 FIFO enabled value.
@@ -700,7 +704,7 @@ bool `$INSTANCE_NAME`_getSlave2FIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setSlave2FIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV2_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV2_FIFO_EN_Pos, enabled);
 }
 /** Get Slave 1 FIFO enabled value.
  * When set to 1, this bit enables EXT_SENS_DATA registers (Registers 73 to 96)
@@ -710,7 +714,7 @@ void `$INSTANCE_NAME`_setSlave2FIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getSlave1FIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV1_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV1_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Slave 1 FIFO enabled value.
@@ -720,7 +724,7 @@ bool `$INSTANCE_NAME`_getSlave1FIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setSlave1FIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV1_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV1_FIFO_EN_Pos, enabled);
 }
 /** Get Slave 0 FIFO enabled value.
  * When set to 1, this bit enables EXT_SENS_DATA registers (Registers 73 to 96)
@@ -730,7 +734,7 @@ void `$INSTANCE_NAME`_setSlave1FIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getSlave0FIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV0_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV0_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Slave 0 FIFO enabled value.
@@ -740,7 +744,7 @@ bool `$INSTANCE_NAME`_getSlave0FIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setSlave0FIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV0_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_FIFO_EN, `$INSTANCE_NAME`_FIFO_EN_SLV0_FIFO_EN_Pos, enabled);
 }
 
 // I2C_MST_CTRL register
@@ -762,7 +766,7 @@ void `$INSTANCE_NAME`_setSlave0FIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getMultiMasterEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_MULT_MST_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_MULT_MST_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set multi-master enabled value.
@@ -772,7 +776,7 @@ bool `$INSTANCE_NAME`_getMultiMasterEnabled(void)
  */
 void `$INSTANCE_NAME`_setMultiMasterEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_MULT_MST_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_MULT_MST_EN_Pos, enabled);
 }
 /** Get wait-for-external-sensor-data enabled value.
  * When the WAIT_FOR_ES bit is set to 1, the Data Ready interrupt will be
@@ -787,7 +791,7 @@ void `$INSTANCE_NAME`_setMultiMasterEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getWaitForExternalSensorEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_WAIT_FOR_ES_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_WAIT_FOR_ES_Pos, buffer);
     return buffer[0];
 }
 /** Set wait-for-external-sensor-data enabled value.
@@ -797,7 +801,7 @@ bool `$INSTANCE_NAME`_getWaitForExternalSensorEnabled(void)
  */
 void `$INSTANCE_NAME`_setWaitForExternalSensorEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_WAIT_FOR_ES_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_WAIT_FOR_ES_Pos, enabled);
 }
 /** Get Slave 3 FIFO enabled value.
  * When set to 1, this bit enables EXT_SENS_DATA registers (Registers 73 to 96)
@@ -807,7 +811,7 @@ void `$INSTANCE_NAME`_setWaitForExternalSensorEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getSlave3FIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_SLV3_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_SLV3_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Slave 3 FIFO enabled value.
@@ -817,7 +821,7 @@ bool `$INSTANCE_NAME`_getSlave3FIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setSlave3FIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_SLV3_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_SLV3_FIFO_EN_Pos, enabled);
 }
 /** Get slave read/write transition enabled value.
  * The I2C_MST_P_NSR bit configures the I2C Master's transition from one slave
@@ -831,7 +835,7 @@ void `$INSTANCE_NAME`_setSlave3FIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getSlaveReadWriteTransitionEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_P_NSR_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_P_NSR_Pos, buffer);
     return buffer[0];
 }
 /** Set slave read/write transition enabled value.
@@ -841,7 +845,7 @@ bool `$INSTANCE_NAME`_getSlaveReadWriteTransitionEnabled(void)
  */
 void `$INSTANCE_NAME`_setSlaveReadWriteTransitionEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_P_NSR_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_P_NSR_Pos, enabled);
 }
 /** Get I2C master clock speed.
  * I2C_MST_CLK is a 4 bit unsigned value which configures a divider on the
@@ -874,7 +878,7 @@ void `$INSTANCE_NAME`_setSlaveReadWriteTransitionEnabled(bool enabled)
  */
 uint8_t `$INSTANCE_NAME`_getMasterClockSpeed(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Pos, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Pos, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Len, buffer);
     return buffer[0];
 }
 /** Set I2C master clock speed.
@@ -883,7 +887,7 @@ uint8_t `$INSTANCE_NAME`_getMasterClockSpeed(void)
  */
 void `$INSTANCE_NAME`_setMasterClockSpeed(uint8_t speed)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Pos, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Len, speed);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Pos, `$INSTANCE_NAME`_I2C_MST_CTRL_I2C_MST_CLK_Len, speed);
 }
 
 // I2C_SLV* registers (Slave 0-3)
@@ -932,7 +936,7 @@ void `$INSTANCE_NAME`_setMasterClockSpeed(uint8_t speed)
 uint8_t `$INSTANCE_NAME`_getSlaveAddress(uint8_t num)
 {
     if (num > 3) return 0;
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_ADDR + num*3, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_I2C_SLV0_ADDR + num*3, buffer);
     return buffer[0];
 }
 /** Set the I2C address of the specified slave (0-3).
@@ -944,7 +948,7 @@ uint8_t `$INSTANCE_NAME`_getSlaveAddress(uint8_t num)
 void `$INSTANCE_NAME`_setSlaveAddress(uint8_t num, uint8_t address)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_ADDR + num*3, address);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV0_ADDR + num*3, address);
 }
 /** Get the active internal register for the specified slave (0-3).
  * Read/write operations for this slave will be done to whatever internal
@@ -960,7 +964,7 @@ void `$INSTANCE_NAME`_setSlaveAddress(uint8_t num, uint8_t address)
 uint8_t `$INSTANCE_NAME`_getSlaveRegister(uint8_t num)
 {
     if (num > 3) return 0;
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_REG + num*3, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_I2C_SLV0_REG + num*3, buffer);
     return buffer[0];
 }
 /** Set the active internal register for the specified slave (0-3).
@@ -972,7 +976,7 @@ uint8_t `$INSTANCE_NAME`_getSlaveRegister(uint8_t num)
 void `$INSTANCE_NAME`_setSlaveRegister(uint8_t num, uint8_t reg)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_REG + num*3, reg);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV0_REG + num*3, reg);
 }
 /** Get the enabled value for the specified slave (0-3).
  * When set to 1, this bit enables Slave 0 for data transfer operations. When
@@ -984,7 +988,7 @@ void `$INSTANCE_NAME`_setSlaveRegister(uint8_t num, uint8_t reg)
 bool `$INSTANCE_NAME`_getSlaveEnabled(uint8_t num)
 {
     if (num > 3) return 0;
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set the enabled value for the specified slave (0-3).
@@ -996,7 +1000,7 @@ bool `$INSTANCE_NAME`_getSlaveEnabled(uint8_t num)
 void `$INSTANCE_NAME`_setSlaveEnabled(uint8_t num, bool enabled)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_EN_Pos, enabled);
 }
 /** Get word pair byte-swapping enabled for the specified slave (0-3).
  * When set to 1, this bit enables byte swapping. When byte swapping is enabled,
@@ -1012,7 +1016,7 @@ void `$INSTANCE_NAME`_setSlaveEnabled(uint8_t num, bool enabled)
 bool `$INSTANCE_NAME`_getSlaveWordByteSwap(uint8_t num)
 {
     if (num > 3) return 0;
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_BYTE_SW_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_BYTE_SW_Pos, buffer);
     return buffer[0];
 }
 /** Set word pair byte-swapping enabled for the specified slave (0-3).
@@ -1024,7 +1028,7 @@ bool `$INSTANCE_NAME`_getSlaveWordByteSwap(uint8_t num)
 void `$INSTANCE_NAME`_setSlaveWordByteSwap(uint8_t num, bool enabled)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_BYTE_SW_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_BYTE_SW_Pos, enabled);
 }
 /** Get write mode for the specified slave (0-3).
  * When set to 1, the transaction will read or write data only. When cleared to
@@ -1039,7 +1043,7 @@ void `$INSTANCE_NAME`_setSlaveWordByteSwap(uint8_t num, bool enabled)
 bool `$INSTANCE_NAME`_getSlaveWriteMode(uint8_t num)
 {
     if (num > 3) return 0;
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_REG_DIS_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_REG_DIS_Pos, buffer);
     return buffer[0];
 }
 /** Set write mode for the specified slave (0-3).
@@ -1051,7 +1055,7 @@ bool `$INSTANCE_NAME`_getSlaveWriteMode(uint8_t num)
 void `$INSTANCE_NAME`_setSlaveWriteMode(uint8_t num, bool mode)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_REG_DIS_Pos, mode);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_REG_DIS_Pos, mode);
 }
 /** Get word pair grouping order offset for the specified slave (0-3).
  * This sets specifies the grouping order of word pairs received from registers.
@@ -1067,7 +1071,7 @@ void `$INSTANCE_NAME`_setSlaveWriteMode(uint8_t num, bool mode)
 bool `$INSTANCE_NAME`_getSlaveWordGroupOffset(uint8_t num)
 {
     if (num > 3) return 0;
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_GRP_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_GRP_Pos, buffer);
     return buffer[0];
 }
 /** Set word pair grouping order offset for the specified slave (0-3).
@@ -1079,7 +1083,7 @@ bool `$INSTANCE_NAME`_getSlaveWordGroupOffset(uint8_t num)
 void `$INSTANCE_NAME`_setSlaveWordGroupOffset(uint8_t num, bool enabled)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_GRP_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_GRP_Pos, enabled);
 }
 /** Get number of bytes to read for the specified slave (0-3).
  * Specifies the number of bytes transferred to and from Slave 0. Clearing this
@@ -1091,7 +1095,7 @@ void `$INSTANCE_NAME`_setSlaveWordGroupOffset(uint8_t num, bool enabled)
 uint8_t `$INSTANCE_NAME`_getSlaveDataLength(uint8_t num)
 {
     if (num > 3) return 0;
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_LEN_Pos, `$INSTANCE_NAME`_I2C_SLV_LEN_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_LEN_Pos, `$INSTANCE_NAME`_I2C_SLV_LEN_Len, buffer);
     return buffer[0];
 }
 /** Set number of bytes to read for the specified slave (0-3).
@@ -1103,7 +1107,7 @@ uint8_t `$INSTANCE_NAME`_getSlaveDataLength(uint8_t num)
 void `$INSTANCE_NAME`_setSlaveDataLength(uint8_t num, uint8_t length)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_LEN_Pos, `$INSTANCE_NAME`_I2C_SLV_LEN_Len, length);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL + num*3, `$INSTANCE_NAME`_I2C_SLV_LEN_Pos, `$INSTANCE_NAME`_I2C_SLV_LEN_Len, length);
 }
 
 // I2C_SLV* registers (Slave 4)
@@ -1119,7 +1123,7 @@ void `$INSTANCE_NAME`_setSlaveDataLength(uint8_t num, uint8_t length)
  */
 uint8_t `$INSTANCE_NAME`_getSlave4Address(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_ADDR, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_I2C_SLV4_ADDR, buffer);
     return buffer[0];
 }
 /** Set the I2C address of Slave 4.
@@ -1129,7 +1133,7 @@ uint8_t `$INSTANCE_NAME`_getSlave4Address(void)
  */
 void `$INSTANCE_NAME`_setSlave4Address(uint8_t address)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_ADDR, address);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV4_ADDR, address);
 }
 /** Get the active internal register for the Slave 4.
  * Read/write operations for this slave will be done to whatever internal
@@ -1140,7 +1144,7 @@ void `$INSTANCE_NAME`_setSlave4Address(uint8_t address)
  */
 uint8_t `$INSTANCE_NAME`_getSlave4Register(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_REG, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_I2C_SLV4_REG, buffer);
     return buffer[0];
 }
 /** Set the active internal register for Slave 4.
@@ -1150,7 +1154,7 @@ uint8_t `$INSTANCE_NAME`_getSlave4Register(void)
  */
 void `$INSTANCE_NAME`_setSlave4Register(uint8_t reg)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_REG, reg);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV4_REG, reg);
 }
 /** Set new byte to write to Slave 4.
  * This register stores the data to be written into the Slave 4. If I2C_SLV4_RW
@@ -1160,7 +1164,7 @@ void `$INSTANCE_NAME`_setSlave4Register(uint8_t reg)
  */
 void `$INSTANCE_NAME`_setSlave4OutputByte(uint8_t data)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_DO, data);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV4_DO, data);
 }
 /** Get the enabled value for the Slave 4.
  * When set to 1, this bit enables Slave 4 for data transfer operations. When
@@ -1170,7 +1174,7 @@ void `$INSTANCE_NAME`_setSlave4OutputByte(uint8_t data)
  */
 bool `$INSTANCE_NAME`_getSlave4Enabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set the enabled value for Slave 4.
@@ -1180,7 +1184,7 @@ bool `$INSTANCE_NAME`_getSlave4Enabled(void)
  */
 void `$INSTANCE_NAME`_setSlave4Enabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_EN_Pos, enabled);
 }
 /** Get the enabled value for Slave 4 transaction interrupts.
  * When set to 1, this bit enables the generation of an interrupt signal upon
@@ -1193,7 +1197,7 @@ void `$INSTANCE_NAME`_setSlave4Enabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getSlave4InterruptEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_INT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_INT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set the enabled value for Slave 4 transaction interrupts.
@@ -1203,7 +1207,7 @@ bool `$INSTANCE_NAME`_getSlave4InterruptEnabled(void)
  */
 void `$INSTANCE_NAME`_setSlave4InterruptEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_INT_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_INT_EN_Pos, enabled);
 }
 /** Get write mode for Slave 4.
  * When set to 1, the transaction will read or write data only. When cleared to
@@ -1216,7 +1220,7 @@ void `$INSTANCE_NAME`_setSlave4InterruptEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getSlave4WriteMode(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_REG_DIS_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_REG_DIS_Pos, buffer);
     return buffer[0];
 }
 /** Set write mode for the Slave 4.
@@ -1226,7 +1230,7 @@ bool `$INSTANCE_NAME`_getSlave4WriteMode(void)
  */
 void `$INSTANCE_NAME`_setSlave4WriteMode(bool mode)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_REG_DIS_Pos, mode);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_SLV4_REG_DIS_Pos, mode);
 }
 /** Get Slave 4 master delay value.
  * This configures the reduced access rate of I2C slaves relative to the Sample
@@ -1245,7 +1249,7 @@ void `$INSTANCE_NAME`_setSlave4WriteMode(bool mode)
  */
 uint8_t `$INSTANCE_NAME`_getSlave4MasterDelay(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Pos, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Pos, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Len, buffer);
     return buffer[0];
 }
 /** Set Slave 4 master delay value.
@@ -1255,7 +1259,7 @@ uint8_t `$INSTANCE_NAME`_getSlave4MasterDelay(void)
  */
 void `$INSTANCE_NAME`_setSlave4MasterDelay(uint8_t delay)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Pos, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Len, delay);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_I2C_SLV4_CTRL, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Pos, `$INSTANCE_NAME`_I2C_SLV4_CTRL_I2C_MST_DLY_Len, delay);
 }
 /** Get last available byte read from Slave 4.
  * This register stores the data read from Slave 4. This field is populated
@@ -1265,7 +1269,7 @@ void `$INSTANCE_NAME`_setSlave4MasterDelay(uint8_t delay)
  */
 uint8_t `$INSTANCE_NAME`_getSlate4InputByte(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV4_DI, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_I2C_SLV4_DI, buffer);
     return buffer[0];
 }
 
@@ -1282,7 +1286,7 @@ uint8_t `$INSTANCE_NAME`_getSlate4InputByte(void)
  */
 bool `$INSTANCE_NAME`_getPassthroughStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_PASS_THROUGH_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_PASS_THROUGH_Pos, buffer);
     return buffer[0];
 }
 /** Get Slave 4 transaction done status.
@@ -1295,7 +1299,7 @@ bool `$INSTANCE_NAME`_getPassthroughStatus(void)
  */
 bool `$INSTANCE_NAME`_getSlave4IsDone(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV4_DONE_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV4_DONE_Pos, buffer);
     return buffer[0];
 }
 /** Get master arbitration lost status.
@@ -1307,7 +1311,7 @@ bool `$INSTANCE_NAME`_getSlave4IsDone(void)
  */
 bool `$INSTANCE_NAME`_getLostArbitration(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_LOST_ARB_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_LOST_ARB_Pos, buffer);
     return buffer[0];
 }
 /** Get Slave 4 NACK status.
@@ -1319,7 +1323,7 @@ bool `$INSTANCE_NAME`_getLostArbitration(void)
  */
 bool `$INSTANCE_NAME`_getSlave4Nack(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV4_NACK_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV4_NACK_Pos, buffer);
     return buffer[0];
 }
 /** Get Slave 3 NACK status.
@@ -1331,7 +1335,7 @@ bool `$INSTANCE_NAME`_getSlave4Nack(void)
  */
 bool `$INSTANCE_NAME`_getSlave3Nack(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV3_NACK_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV3_NACK_Pos, buffer);
     return buffer[0];
 }
 /** Get Slave 2 NACK status.
@@ -1343,7 +1347,7 @@ bool `$INSTANCE_NAME`_getSlave3Nack(void)
  */
 bool `$INSTANCE_NAME`_getSlave2Nack(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV2_NACK_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV2_NACK_Pos, buffer);
     return buffer[0];
 }
 /** Get Slave 1 NACK status.
@@ -1355,7 +1359,7 @@ bool `$INSTANCE_NAME`_getSlave2Nack(void)
  */
 bool `$INSTANCE_NAME`_getSlave1Nack(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV1_NACK_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV1_NACK_Pos, buffer);
     return buffer[0];
 }
 /** Get Slave 0 NACK status.
@@ -1367,7 +1371,7 @@ bool `$INSTANCE_NAME`_getSlave1Nack(void)
  */
 bool `$INSTANCE_NAME`_getSlave0Nack(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV0_NACK_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_STATUS, `$INSTANCE_NAME`_I2C_MST_STATUS_I2C_SLV0_NACK_Pos, buffer);
     return buffer[0];
 }
 
@@ -1381,7 +1385,7 @@ bool `$INSTANCE_NAME`_getSlave0Nack(void)
  */
 bool `$INSTANCE_NAME`_getInterruptMode(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_LEVEL_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_LEVEL_Pos, buffer);
     return buffer[0];
 }
 /** Set interrupt logic level mode.
@@ -1392,7 +1396,7 @@ bool `$INSTANCE_NAME`_getInterruptMode(void)
  */
 void `$INSTANCE_NAME`_setInterruptMode(bool mode)
 {
-   `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_LEVEL_Pos, mode);
+   `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_LEVEL_Pos, mode);
 }
 /** Get interrupt drive mode.
  * Will be set 0 for push-pull, 1 for open-drain.
@@ -1402,7 +1406,7 @@ void `$INSTANCE_NAME`_setInterruptMode(bool mode)
  */
 bool `$INSTANCE_NAME`_getInterruptDrive(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_OPEN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_OPEN_Pos, buffer);
     return buffer[0];
 }
 /** Set interrupt drive mode.
@@ -1413,7 +1417,7 @@ bool `$INSTANCE_NAME`_getInterruptDrive(void)
  */
 void `$INSTANCE_NAME`_setInterruptDrive(bool drive)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_OPEN_Pos, drive);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_OPEN_Pos, drive);
 }
 /** Get interrupt latch mode.
  * Will be set 0 for 50us-pulse, 1 for latch-until-int-cleared.
@@ -1423,7 +1427,7 @@ void `$INSTANCE_NAME`_setInterruptDrive(bool drive)
  */
 bool `$INSTANCE_NAME`_getInterruptLatch(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_LATCH_INT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_LATCH_INT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set interrupt latch mode.
@@ -1434,7 +1438,7 @@ bool `$INSTANCE_NAME`_getInterruptLatch(void)
  */
 void `$INSTANCE_NAME`_setInterruptLatch(bool latch)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_LATCH_INT_EN_Pos, latch);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_LATCH_INT_EN_Pos, latch);
 }
 /** Get interrupt latch clear mode.
  * Will be set 0 for status-read-only, 1 for any-register-read.
@@ -1444,7 +1448,7 @@ void `$INSTANCE_NAME`_setInterruptLatch(bool latch)
  */
 bool `$INSTANCE_NAME`_getInterruptLatchClear(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_RD_CLEAR_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_RD_CLEAR_Pos, buffer);
     return buffer[0];
 }
 /** Set interrupt latch clear mode.
@@ -1455,7 +1459,7 @@ bool `$INSTANCE_NAME`_getInterruptLatchClear(void)
  */
 void `$INSTANCE_NAME`_setInterruptLatchClear(bool clear)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_RD_CLEAR_Pos, clear);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_INT_RD_CLEAR_Pos, clear);
 }
 /** Get FSYNC interrupt logic level mode.
  * @return Current FSYNC interrupt mode (0=active-high, 1=active-low)
@@ -1465,7 +1469,7 @@ void `$INSTANCE_NAME`_setInterruptLatchClear(bool clear)
  */
 bool `$INSTANCE_NAME`_getFSyncInterruptLevel(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_LEVEL_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_LEVEL_Pos, buffer);
     return buffer[0];
 }
 /** Set FSYNC interrupt logic level mode.
@@ -1476,7 +1480,7 @@ bool `$INSTANCE_NAME`_getFSyncInterruptLevel(void)
  */
 void `$INSTANCE_NAME`_setFSyncInterruptLevel(bool level)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_LEVEL_Pos, level);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_LEVEL_Pos, level);
 }
 /** Get FSYNC pin interrupt enabled setting.
  * Will be set 0 for disabled, 1 for enabled.
@@ -1486,7 +1490,7 @@ void `$INSTANCE_NAME`_setFSyncInterruptLevel(bool level)
  */
 bool `$INSTANCE_NAME`_getFSyncInterruptEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set FSYNC pin interrupt enabled setting.
@@ -1497,7 +1501,7 @@ bool `$INSTANCE_NAME`_getFSyncInterruptEnabled(void)
  */
 void `$INSTANCE_NAME`_setFSyncInterruptEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_FSYNC_INT_EN_Pos, enabled);
 }
 /** Get I2C bypass enabled status.
  * When this bit is equal to 1 and I2C_MST_EN (Register 106 bit[5]) is equal to
@@ -1512,7 +1516,7 @@ void `$INSTANCE_NAME`_setFSyncInterruptEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getI2CBypassEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_BYPASS_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_BYPASS_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set I2C bypass enabled status.
@@ -1528,7 +1532,7 @@ bool `$INSTANCE_NAME`_getI2CBypassEnabled(void)
  */
 void `$INSTANCE_NAME`_setI2CBypassEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_BYPASS_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_BYPASS_EN_Pos, enabled);
 }
 /** Get reference clock output enabled status.
  * When this bit is equal to 1, a reference clock output is provided at the
@@ -1541,7 +1545,7 @@ void `$INSTANCE_NAME`_setI2CBypassEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getClockOutputEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_CLKOUT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_CLKOUT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set reference clock output enabled status.
@@ -1555,7 +1559,7 @@ bool `$INSTANCE_NAME`_getClockOutputEnabled(void)
  */
 void `$INSTANCE_NAME`_setClockOutputEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_CLKOUT_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_PIN_CFG, `$INSTANCE_NAME`_INT_PIN_CFG_I2C_CLKOUT_EN_Pos, enabled);
 }
 
 // INT_ENABLE register
@@ -1569,7 +1573,7 @@ void `$INSTANCE_NAME`_setClockOutputEnabled(bool enabled)
  **/
 uint8_t `$INSTANCE_NAME`_getIntEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_INT_ENABLE, buffer);
     return buffer[0];
 }
 /** Set full interrupt enabled status.
@@ -1582,7 +1586,7 @@ uint8_t `$INSTANCE_NAME`_getIntEnabled(void)
  **/
 void `$INSTANCE_NAME`_setIntEnabled(uint8_t enabled)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, enabled);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_INT_ENABLE, enabled);
 }
 /** Get Free Fall interrupt enabled status.
  * Will be set 0 for disabled, 1 for enabled.
@@ -1592,7 +1596,7 @@ void `$INSTANCE_NAME`_setIntEnabled(uint8_t enabled)
  **/
 bool `$INSTANCE_NAME`_getIntFreefallEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FF_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FF_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Free Fall interrupt enabled status.
@@ -1603,7 +1607,7 @@ bool `$INSTANCE_NAME`_getIntFreefallEnabled(void)
  **/
 void `$INSTANCE_NAME`_setIntFreefallEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FF_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FF_EN_Pos, enabled);
 }
 /** Get Motion Detection interrupt enabled status.
  * Will be set 0 for disabled, 1 for enabled.
@@ -1613,7 +1617,7 @@ void `$INSTANCE_NAME`_setIntFreefallEnabled(bool enabled)
  **/
 bool `$INSTANCE_NAME`_getIntMotionEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_MOT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_MOT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Motion Detection interrupt enabled status.
@@ -1624,7 +1628,7 @@ bool `$INSTANCE_NAME`_getIntMotionEnabled(void)
  **/
 void `$INSTANCE_NAME`_setIntMotionEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_MOT_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_MOT_EN_Pos, enabled);
 }
 /** Get Zero Motion Detection interrupt enabled status.
  * Will be set 0 for disabled, 1 for enabled.
@@ -1634,7 +1638,7 @@ void `$INSTANCE_NAME`_setIntMotionEnabled(bool enabled)
  **/
 bool `$INSTANCE_NAME`_getIntZeroMotionEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_ZMOT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_ZMOT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Zero Motion Detection interrupt enabled status.
@@ -1645,7 +1649,7 @@ bool `$INSTANCE_NAME`_getIntZeroMotionEnabled(void)
  **/
 void `$INSTANCE_NAME`_setIntZeroMotionEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_ZMOT_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_ZMOT_EN_Pos, enabled);
 }
 /** Get FIFO Buffer Overflow interrupt enabled status.
  * Will be set 0 for disabled, 1 for enabled.
@@ -1655,7 +1659,7 @@ void `$INSTANCE_NAME`_setIntZeroMotionEnabled(bool enabled)
  **/
 bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FIFO_OFLOW_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FIFO_OFLOW_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set FIFO Buffer Overflow interrupt enabled status.
@@ -1666,7 +1670,7 @@ bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowEnabled(void)
  **/
 void `$INSTANCE_NAME`_setIntFIFOBufferOverflowEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FIFO_OFLOW_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_FIFO_OFLOW_EN_Pos, enabled);
 }
 /** Get I2C Master interrupt enabled status.
  * This enables any of the I2C Master interrupt sources to generate an
@@ -1677,7 +1681,7 @@ void `$INSTANCE_NAME`_setIntFIFOBufferOverflowEnabled(bool enabled)
  **/
 bool `$INSTANCE_NAME`_getIntI2CMasterEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_I2C_MST_INT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_I2C_MST_INT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set I2C Master interrupt enabled status.
@@ -1688,7 +1692,7 @@ bool `$INSTANCE_NAME`_getIntI2CMasterEnabled(void)
  **/
 void `$INSTANCE_NAME`_setIntI2CMasterEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_I2C_MST_INT_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_I2C_MST_INT_EN_Pos, enabled);
 }
 /** Get Data Ready interrupt enabled setting.
  * This event occurs each time a write operation to all of the sensor registers
@@ -1699,7 +1703,7 @@ void `$INSTANCE_NAME`_setIntI2CMasterEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getIntDataReadyEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DATA_RDY_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DATA_RDY_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set Data Ready interrupt enabled status.
@@ -1710,7 +1714,7 @@ bool `$INSTANCE_NAME`_getIntDataReadyEnabled(void)
  */
 void `$INSTANCE_NAME`_setIntDataReadyEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DATA_RDY_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DATA_RDY_EN_Pos, enabled);
 }
 
 // INT_STATUS register
@@ -1724,7 +1728,7 @@ void `$INSTANCE_NAME`_setIntDataReadyEnabled(bool enabled)
  */
 uint8_t `$INSTANCE_NAME`_getIntStatus(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_INT_STATUS, buffer);
     return buffer[0];
 }
 /** Get Free Fall interrupt status.
@@ -1736,7 +1740,7 @@ uint8_t `$INSTANCE_NAME`_getIntStatus(void)
  */
 bool `$INSTANCE_NAME`_getIntFreefallStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_FF_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_FF_EN_Pos, buffer);
     return buffer[0];
 }
 /** Get Motion Detection interrupt status.
@@ -1748,7 +1752,7 @@ bool `$INSTANCE_NAME`_getIntFreefallStatus(void)
  */
 bool `$INSTANCE_NAME`_getIntMotionStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_MOT_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_MOT_INT_Pos, buffer);
     return buffer[0];
 }
 /** Get Zero Motion Detection interrupt status.
@@ -1760,7 +1764,7 @@ bool `$INSTANCE_NAME`_getIntMotionStatus(void)
  */
 bool `$INSTANCE_NAME`_getIntZeroMotionStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_ZMOT_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_ZMOT_EN_Pos, buffer);
     return buffer[0];
 }
 /** Get FIFO Buffer Overflow interrupt status.
@@ -1772,7 +1776,7 @@ bool `$INSTANCE_NAME`_getIntZeroMotionStatus(void)
  */
 bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_FIFO_OFLOW_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_FIFO_OFLOW_INT_Pos, buffer);
     return buffer[0];
 }
 /** Get I2C Master interrupt status.
@@ -1785,7 +1789,7 @@ bool `$INSTANCE_NAME`_getIntFIFOBufferOverflowStatus(void)
  */
 bool `$INSTANCE_NAME`_getIntI2CMasterStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_I2C_MST_INT_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_I2C_MST_INT_INT_Pos, buffer);
     return buffer[0];
 }
 /** Get Data Ready interrupt status.
@@ -1797,7 +1801,7 @@ bool `$INSTANCE_NAME`_getIntI2CMasterStatus(void)
  */
 bool `$INSTANCE_NAME`_getIntDataReadyStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_DATA_RDY_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_STATUS_DATA_RDY_INT_Pos, buffer);
     return buffer[0];
 }
 
@@ -1821,7 +1825,7 @@ bool `$INSTANCE_NAME`_getIntDataReadyStatus(void)
  */
 void `$INSTANCE_NAME`_getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz)
 {
-    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 22, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 22, buffer);
 	*ax = (((int16_t)buffer[0]) << 8) | buffer[1];
 	*ay = (((int16_t)buffer[2]) << 8) | buffer[3];
 	*az = (((int16_t)buffer[4]) << 8) | buffer[5];
@@ -1857,7 +1861,7 @@ void `$INSTANCE_NAME`_getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t*
  */
 void `$INSTANCE_NAME`_getMotion9t(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz, int16_t* t)
 {
-    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 22, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 22, buffer);
 	*ax = (((int16_t)buffer[0]) << 8) | buffer[1];
 	*ay = (((int16_t)buffer[2]) << 8) | buffer[3];
 	*az = (((int16_t)buffer[4]) << 8) | buffer[5];
@@ -1887,7 +1891,7 @@ void `$INSTANCE_NAME`_getMotion9t(int16_t* ax, int16_t* ay, int16_t* az, int16_t
  */
 void `$INSTANCE_NAME`_getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 14, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 14, buffer);
     //fixme the following code needs to be examined. causes a interrupt to NMI_VECTOR
     *ax = (((int16_t)buffer[0]) << 8) | buffer[1];
     *ay = (((int16_t)buffer[2]) << 8) | buffer[3];
@@ -1913,7 +1917,7 @@ void `$INSTANCE_NAME`_getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t*
  */
 void `$INSTANCE_NAME`_getMotion6t(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* t)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 14, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 14, buffer);
     *ax = (((int16_t)buffer[0]) << 8) | buffer[1];
     *ay = (((int16_t)buffer[2]) << 8) | buffer[3];
     *az = (((int16_t)buffer[4]) << 8) | buffer[5];
@@ -1961,7 +1965,7 @@ void `$INSTANCE_NAME`_getMotion6t(int16_t* ax, int16_t* ay, int16_t* az, int16_t
  */
 void `$INSTANCE_NAME`_getAcceleration(int16_t* x, int16_t* y, int16_t* z)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 6, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 6, buffer);
     *x = (((int16_t)buffer[0]) << 8) | buffer[1];
     *y = (((int16_t)buffer[2]) << 8) | buffer[3];
     *z = (((int16_t)buffer[4]) << 8) | buffer[5];
@@ -1973,7 +1977,7 @@ void `$INSTANCE_NAME`_getAcceleration(int16_t* x, int16_t* y, int16_t* z)
  */
 int16_t `$INSTANCE_NAME`_getAccelerationX(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_XOUT_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 /** Get Y-axis accelerometer reading.
@@ -1983,7 +1987,7 @@ int16_t `$INSTANCE_NAME`_getAccelerationX(void)
  */
 int16_t `$INSTANCE_NAME`_getAccelerationY(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ACCEL_YOUT_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_YOUT_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 /** Get Z-axis accelerometer reading.
@@ -1993,7 +1997,7 @@ int16_t `$INSTANCE_NAME`_getAccelerationY(void)
  */
 int16_t `$INSTANCE_NAME`_getAccelerationZ(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ACCEL_ZOUT_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ACCEL_ZOUT_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 
@@ -2005,7 +2009,7 @@ int16_t `$INSTANCE_NAME`_getAccelerationZ(void)
  */
 int16_t `$INSTANCE_NAME`_getTemperature(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_TEMP_OUT_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_TEMP_OUT_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 
@@ -2045,7 +2049,7 @@ int16_t `$INSTANCE_NAME`_getTemperature(void)
  */
 void `$INSTANCE_NAME`_getRotation(int16_t* x, int16_t* y, int16_t* z)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_GYRO_XOUT_H, 6, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_GYRO_XOUT_H, 6, buffer);
     *x = (((int16_t)buffer[0]) << 8) | buffer[1];
     *y = (((int16_t)buffer[2]) << 8) | buffer[3];
     *z = (((int16_t)buffer[4]) << 8) | buffer[5];
@@ -2057,7 +2061,7 @@ void `$INSTANCE_NAME`_getRotation(int16_t* x, int16_t* y, int16_t* z)
  */
 int16_t `$INSTANCE_NAME`_getRotationX(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_GYRO_XOUT_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_GYRO_XOUT_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 /** Get Y-axis gyroscope reading.
@@ -2067,7 +2071,7 @@ int16_t `$INSTANCE_NAME`_getRotationX(void)
  */
 int16_t `$INSTANCE_NAME`_getRotationY(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_GYRO_YOUT_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_GYRO_YOUT_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 /** Get Z-axis gyroscope reading.
@@ -2077,7 +2081,7 @@ int16_t `$INSTANCE_NAME`_getRotationY(void)
  */
 int16_t `$INSTANCE_NAME`_getRotationZ(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_GYRO_ZOUT_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_GYRO_ZOUT_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 
@@ -2159,7 +2163,7 @@ int16_t `$INSTANCE_NAME`_getRotationZ(void)
  */
 uint8_t `$INSTANCE_NAME`_getExternalSensorByte(int position)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_EXT_SENS_DATA_00 + position, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_EXT_SENS_DATA_00 + position, buffer);
     return buffer[0];
 }
 /** Read word (2 bytes) from external sensor data registers.
@@ -2169,7 +2173,7 @@ uint8_t `$INSTANCE_NAME`_getExternalSensorByte(int position)
  */
 uint16_t `$INSTANCE_NAME`_getExternalSensorWord(int position)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_EXT_SENS_DATA_00 + position, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_EXT_SENS_DATA_00 + position, 2, buffer);
     return (((uint16_t)buffer[0]) << 8) | buffer[1];
 }
 /** Read double word (4 bytes) from external sensor data registers.
@@ -2179,7 +2183,7 @@ uint16_t `$INSTANCE_NAME`_getExternalSensorWord(int position)
  */
 uint32_t `$INSTANCE_NAME`_getExternalSensorDWord(int position)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_EXT_SENS_DATA_00 + position, 4, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_EXT_SENS_DATA_00 + position, 4, buffer);
     return (((uint32_t)buffer[0]) << 24) | (((uint32_t)buffer[1]) << 16) | (((uint16_t)buffer[2]) << 8) | buffer[3];
 }
 
@@ -2192,7 +2196,7 @@ uint32_t `$INSTANCE_NAME`_getExternalSensorDWord(int position)
  */
 bool `$INSTANCE_NAME`_getXNegMotionDetected(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_XNEG_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_XNEG_Pos, buffer);
     return buffer[0];
 }
 /** Get X-axis positive motion detection interrupt status.
@@ -2202,7 +2206,7 @@ bool `$INSTANCE_NAME`_getXNegMotionDetected(void)
  */
 bool `$INSTANCE_NAME`_getXPosMotionDetected(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_XPOS_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_XPOS_Pos, buffer);
     return buffer[0];
 }
 /** Get Y-axis negative motion detection interrupt status.
@@ -2212,7 +2216,7 @@ bool `$INSTANCE_NAME`_getXPosMotionDetected(void)
  */
 bool `$INSTANCE_NAME`_getYNegMotionDetected(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_YNEG_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_YNEG_Pos, buffer);
     return buffer[0];
 }
 /** Get Y-axis positive motion detection interrupt status.
@@ -2222,7 +2226,7 @@ bool `$INSTANCE_NAME`_getYNegMotionDetected(void)
  */
 bool `$INSTANCE_NAME`_getYPosMotionDetected(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_YPOS_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_YPOS_Pos, buffer);
     return buffer[0];
 }
 /** Get Z-axis negative motion detection interrupt status.
@@ -2232,7 +2236,7 @@ bool `$INSTANCE_NAME`_getYPosMotionDetected(void)
  */
 bool `$INSTANCE_NAME`_getZNegMotionDetected(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_ZNEG_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_ZNEG_Pos, buffer);
     return buffer[0];
 }
 /** Get Z-axis positive motion detection interrupt status.
@@ -2242,7 +2246,7 @@ bool `$INSTANCE_NAME`_getZNegMotionDetected(void)
  */
 bool `$INSTANCE_NAME`_getZPosMotionDetected(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_ZPOS_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_ZPOS_Pos, buffer);
     return buffer[0];
 }
 /** Get zero motion detection interrupt status.
@@ -2252,7 +2256,7 @@ bool `$INSTANCE_NAME`_getZPosMotionDetected(void)
  */
 bool `$INSTANCE_NAME`_getZeroMotionDetected(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_ZRMOT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_MOT_DETECT_STATUS, `$INSTANCE_NAME`_MOT_DETECT_STATUS_ZRMOT_Pos, buffer);
     return buffer[0];
 }
 
@@ -2269,7 +2273,7 @@ bool `$INSTANCE_NAME`_getZeroMotionDetected(void)
 void `$INSTANCE_NAME`_setSlaveOutputByte(uint8_t num, uint8_t data)
 {
     if (num > 3) return;
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_I2C_SLV0_DO + num, data);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV0_DO + num, data);
 }
 
 // I2C_MST_DELAY_CTRL register
@@ -2284,7 +2288,7 @@ void `$INSTANCE_NAME`_setSlaveOutputByte(uint8_t num, uint8_t data)
  */
 bool `$INSTANCE_NAME`_getExternalShadowDelayEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, `$INSTANCE_NAME`_I2C_MST_DELAY_CT_RL_DELAY_ES_SHADOW_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, `$INSTANCE_NAME`_I2C_MST_DELAY_CT_RL_DELAY_ES_SHADOW_Pos, buffer);
     return buffer[0];
 }
 /** Set external data shadow delay enabled status.
@@ -2295,7 +2299,7 @@ bool `$INSTANCE_NAME`_getExternalShadowDelayEnabled(void)
  */
 void `$INSTANCE_NAME`_setExternalShadowDelayEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, `$INSTANCE_NAME`_I2C_MST_DELAY_CT_RL_DELAY_ES_SHADOW_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, `$INSTANCE_NAME`_I2C_MST_DELAY_CT_RL_DELAY_ES_SHADOW_Pos, enabled);
 }
 /** Get slave delay enabled status.
  * When a particular slave delay is enabled, the rate of access for the that
@@ -2319,7 +2323,7 @@ bool `$INSTANCE_NAME`_getSlaveDelayEnabled(uint8_t num)
 {
     // `$INSTANCE_NAME`_DELAYCTRL_I2C_SLV4_DLY_EN_BIT is 4, SLV3 is 3, etc.
     if (num > 4) return 0;
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, num, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, num, buffer);
     return buffer[0];
 }
 /** Set slave delay enabled status.
@@ -2330,7 +2334,7 @@ bool `$INSTANCE_NAME`_getSlaveDelayEnabled(uint8_t num)
  */
 void `$INSTANCE_NAME`_setSlaveDelayEnabled(uint8_t num, bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, num, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, num, enabled);
 }
 
 // SIGNAL_PATH_RESET register
@@ -2343,7 +2347,7 @@ void `$INSTANCE_NAME`_setSlaveDelayEnabled(uint8_t num, bool enabled)
  */
 void `$INSTANCE_NAME`_resetGyroscopePath(void)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_SIGNAL_PATH_RESET, `$INSTANCE_NAME`_SIGNAL_PATH_RESET_GYRO_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_SIGNAL_PATH_RESET, `$INSTANCE_NAME`_SIGNAL_PATH_RESET_GYRO_RESET_Pos, true);
 }
 /** Reset accelerometer signal path.
  * The reset will revert the signal path analog to digital converters and
@@ -2353,7 +2357,7 @@ void `$INSTANCE_NAME`_resetGyroscopePath(void)
  */
 void `$INSTANCE_NAME`_resetAccelerometerPath(void)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_SIGNAL_PATH_RESET, `$INSTANCE_NAME`_SIGNAL_PATH_RESET_ACCEL_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_SIGNAL_PATH_RESET, `$INSTANCE_NAME`_SIGNAL_PATH_RESET_ACCEL_RESET_Pos, true);
 }
 /** Reset temperature sensor signal path.
  * The reset will revert the signal path analog to digital converters and
@@ -2363,7 +2367,7 @@ void `$INSTANCE_NAME`_resetAccelerometerPath(void)
  */
 void `$INSTANCE_NAME`_resetTemperaturePath(void)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_SIGNAL_PATH_RESET, `$INSTANCE_NAME`_SIGNAL_PATH_RESET_TEMP_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_SIGNAL_PATH_RESET, `$INSTANCE_NAME`_SIGNAL_PATH_RESET_TEMP_RESET_Pos, true);
 }
 
 // MOT_DETECT_CTRL register
@@ -2384,7 +2388,7 @@ void `$INSTANCE_NAME`_resetTemperaturePath(void)
  */
 uint8_t `$INSTANCE_NAME`_getAccelerometerPowerOnDelay(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Len, buffer);
     return buffer[0];
 }
 /** Set accelerometer power-on delay.
@@ -2395,7 +2399,7 @@ uint8_t `$INSTANCE_NAME`_getAccelerometerPowerOnDelay(void)
  */
 void `$INSTANCE_NAME`_setAccelerometerPowerOnDelay(uint8_t delay)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Len, delay);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_ACCEL_ON_DELAY_Len, delay);
 }
 /** Get Free Fall detection counter decrement configuration.
  * Detection is registered by the Free Fall detection module after accelerometer
@@ -2425,7 +2429,7 @@ void `$INSTANCE_NAME`_setAccelerometerPowerOnDelay(uint8_t delay)
  */
 uint8_t `$INSTANCE_NAME`_getFreefallDetectionCounterDecrement(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Len, buffer);
     return buffer[0];
 }
 /** Set Free Fall detection counter decrement configuration.
@@ -2436,7 +2440,7 @@ uint8_t `$INSTANCE_NAME`_getFreefallDetectionCounterDecrement(void)
  */
 void `$INSTANCE_NAME`_setFreefallDetectionCounterDecrement(uint8_t decrement)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Len, decrement);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_FF_COUNT_Len, decrement);
 }
 /** Get Motion detection counter decrement configuration.
  * Detection is registered by the Motion detection module after accelerometer
@@ -2463,7 +2467,7 @@ void `$INSTANCE_NAME`_setFreefallDetectionCounterDecrement(uint8_t decrement)
  */
 uint8_t `$INSTANCE_NAME`_getMotionDetectionCounterDecrement(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Len, buffer);
     return buffer[0];
 }
 /** Set Motion detection counter decrement configuration.
@@ -2474,7 +2478,7 @@ uint8_t `$INSTANCE_NAME`_getMotionDetectionCounterDecrement(void)
  */
 void `$INSTANCE_NAME`_setMotionDetectionCounterDecrement(uint8_t decrement)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Len, decrement);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_MOT_DETECT_CTRL, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Pos, `$INSTANCE_NAME`_MOT_DETECT_CTRL_MOT_COUNT_Len, decrement);
 }
 
 // USER_CTRL register
@@ -2489,7 +2493,7 @@ void `$INSTANCE_NAME`_setMotionDetectionCounterDecrement(uint8_t decrement)
  */
 bool `$INSTANCE_NAME`_getFIFOEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_FIFO_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_FIFO_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set FIFO enabled status.
@@ -2500,7 +2504,7 @@ bool `$INSTANCE_NAME`_getFIFOEnabled(void)
  */
 void `$INSTANCE_NAME`_setFIFOEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_FIFO_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_FIFO_EN_Pos, enabled);
 }
 /** Get I2C Master Mode enabled status.
  * When this mode is enabled, the MPU-60X0 acts as the I2C Master to the
@@ -2515,7 +2519,7 @@ void `$INSTANCE_NAME`_setFIFOEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getI2CMasterModeEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_MST_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_MST_EN_Pos, buffer);
     return buffer[0];
 }
 /** Set I2C Master Mode enabled status.
@@ -2526,7 +2530,7 @@ bool `$INSTANCE_NAME`_getI2CMasterModeEnabled(void)
  */
 void `$INSTANCE_NAME`_setI2CMasterModeEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_MST_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_MST_EN_Pos, enabled);
 }
 /** Switch from I2C to SPI mode (MPU-6000 only)
  * If this is set, the primary SPI interface will be enabled in place of the
@@ -2534,7 +2538,7 @@ void `$INSTANCE_NAME`_setI2CMasterModeEnabled(bool enabled)
  */
 void `$INSTANCE_NAME`_switchSPIEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_IF_DIS_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_IF_DIS_Pos, enabled);
 }
 /** Reset the FIFO.
  * This bit resets the FIFO buffer when set to 1 while FIFO_EN equals 0. This
@@ -2544,7 +2548,7 @@ void `$INSTANCE_NAME`_switchSPIEnabled(bool enabled)
  */
 void `$INSTANCE_NAME`_resetFIFO(void)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_FIFO_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_FIFO_RESET_Pos, true);
 }
 /** Reset the I2C Master.
  * This bit resets the I2C Master when set to 1 while I2C_MST_EN equals 0.
@@ -2554,7 +2558,7 @@ void `$INSTANCE_NAME`_resetFIFO(void)
  */
 void `$INSTANCE_NAME`_resetI2CMaster(void)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_MST_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_I2C_MST_RESET_Pos, true);
 }
 /** Reset all sensor registers and signal paths.
  * When set to 1, this bit resets the signal paths for all sensors (gyroscopes,
@@ -2570,7 +2574,7 @@ void `$INSTANCE_NAME`_resetI2CMaster(void)
  */
 void `$INSTANCE_NAME`_resetSensors(void)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_SIG_COND_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_SIG_COND_RESET_Pos, true);
 }
 
 // PWR_MGMT_1 register
@@ -2583,7 +2587,7 @@ void `$INSTANCE_NAME`_resetSensors(void)
 void `$INSTANCE_NAME`_reset(void)
 {
 	//todo consider writing byte 0x80 without reading the register before since it is reset anyways
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_DEVICE_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_DEVICE_RESET_Pos, true);
 }
 /** Get sleep mode status.
  * Setting the SLEEP bit in the register puts the device into very low power
@@ -2598,7 +2602,7 @@ void `$INSTANCE_NAME`_reset(void)
  */
 bool `$INSTANCE_NAME`_getSleepEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_SLEEP_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_SLEEP_Pos, buffer);
     return buffer[0];
 }
 /** Set sleep mode status.
@@ -2609,7 +2613,7 @@ bool `$INSTANCE_NAME`_getSleepEnabled(void)
  */
 void `$INSTANCE_NAME`_setSleepEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_SLEEP_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_SLEEP_Pos, enabled);
 }
 /** Get wake cycle enabled status.
  * When this bit is set to 1 and SLEEP is disabled, the MPU-60X0 will cycle
@@ -2621,7 +2625,7 @@ void `$INSTANCE_NAME`_setSleepEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getWakeCycleEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CYCLE_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CYCLE_Pos, buffer);
     return buffer[0];
 }
 /** Set wake cycle enabled status.
@@ -2632,7 +2636,7 @@ bool `$INSTANCE_NAME`_getWakeCycleEnabled(void)
  */
 void `$INSTANCE_NAME`_setWakeCycleEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CYCLE_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CYCLE_Pos, enabled);
 }
 /** Get temperature sensor enabled status.
  * Control the usage of the internal temperature sensor.
@@ -2647,7 +2651,7 @@ void `$INSTANCE_NAME`_setWakeCycleEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getTempSensorEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_TEMP_DIS_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_TEMP_DIS_Pos, buffer);
     return buffer[0] == 0; // 1 is actually disabled here
 }
 /** Set temperature sensor enabled status.
@@ -2663,7 +2667,7 @@ bool `$INSTANCE_NAME`_getTempSensorEnabled(void)
 void `$INSTANCE_NAME`_setTempSensorEnabled(bool enabled)
 {
     // 1 is actually disabled here
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_TEMP_DIS_Pos, !enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_TEMP_DIS_Pos, !enabled);
 }
 /** Get clock source setting.
  * @return Current clock source setting
@@ -2673,7 +2677,7 @@ void `$INSTANCE_NAME`_setTempSensorEnabled(bool enabled)
  */
 uint8_t `$INSTANCE_NAME`_getClockSource(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Pos, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Pos, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Len, buffer);
     return buffer[0];
 }
 /** Set clock source setting.
@@ -2708,7 +2712,7 @@ uint8_t `$INSTANCE_NAME`_getClockSource(void)
  */
 void `$INSTANCE_NAME`_setClockSource(uint8_t source)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Pos, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Len, source);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_PWR_MGMT_1, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Pos, `$INSTANCE_NAME`_PWR_MGMT_1_CLK_SEL_Len, source);
 }
 
 // PWR_MGMT_2 register
@@ -2738,7 +2742,7 @@ void `$INSTANCE_NAME`_setClockSource(uint8_t source)
  */
 uint8_t `$INSTANCE_NAME`_getWakeFrequency(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Pos, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Pos, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Len, buffer);
     return buffer[0];
 }
 /** Set wake frequency in Accel-Only Low Power Mode.
@@ -2747,7 +2751,7 @@ uint8_t `$INSTANCE_NAME`_getWakeFrequency(void)
  */
 void `$INSTANCE_NAME`_setWakeFrequency(uint8_t frequency)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Pos, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Len, frequency);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Pos, `$INSTANCE_NAME`_PWR_MGMT_2_LP_WAKE_CTRL_Len, frequency);
 }
 
 /** Get X-axis accelerometer standby enabled status.
@@ -2758,7 +2762,7 @@ void `$INSTANCE_NAME`_setWakeFrequency(uint8_t frequency)
  */
 bool `$INSTANCE_NAME`_getStandbyXAccelEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XA_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XA_Pos, buffer);
     return buffer[0];
 }
 /** Set X-axis accelerometer standby enabled status.
@@ -2769,7 +2773,7 @@ bool `$INSTANCE_NAME`_getStandbyXAccelEnabled(void)
  */
 void `$INSTANCE_NAME`_setStandbyXAccelEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XA_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XA_Pos, enabled);
 }
 /** Get Y-axis accelerometer standby enabled status.
  * If enabled, the Y-axis will not gather or report data (or use power).
@@ -2779,7 +2783,7 @@ void `$INSTANCE_NAME`_setStandbyXAccelEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getStandbyYAccelEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YA_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YA_Pos, buffer);
     return buffer[0];
 }
 /** Set Y-axis accelerometer standby enabled status.
@@ -2790,7 +2794,7 @@ bool `$INSTANCE_NAME`_getStandbyYAccelEnabled(void)
  */
 void `$INSTANCE_NAME`_setStandbyYAccelEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YA_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YA_Pos, enabled);
 }
 /** Get Z-axis accelerometer standby enabled status.
  * If enabled, the Z-axis will not gather or report data (or use power).
@@ -2800,7 +2804,7 @@ void `$INSTANCE_NAME`_setStandbyYAccelEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getStandbyZAccelEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZA_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZA_Pos, buffer);
     return buffer[0];
 }
 /** Set Z-axis accelerometer standby enabled status.
@@ -2811,7 +2815,7 @@ bool `$INSTANCE_NAME`_getStandbyZAccelEnabled(void)
  */
 void `$INSTANCE_NAME`_setStandbyZAccelEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZA_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZA_Pos, enabled);
 }
 /** Get X-axis gyroscope standby enabled status.
  * If enabled, the X-axis will not gather or report data (or use power).
@@ -2821,7 +2825,7 @@ void `$INSTANCE_NAME`_setStandbyZAccelEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getStandbyXGyroEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XG_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XG_Pos, buffer);
     return buffer[0];
 }
 /** Set X-axis gyroscope standby enabled status.
@@ -2832,7 +2836,7 @@ bool `$INSTANCE_NAME`_getStandbyXGyroEnabled(void)
  */
 void `$INSTANCE_NAME`_setStandbyXGyroEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XG_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_XG_Pos, enabled);
 }
 /** Get Y-axis gyroscope standby enabled status.
  * If enabled, the Y-axis will not gather or report data (or use power).
@@ -2842,7 +2846,7 @@ void `$INSTANCE_NAME`_setStandbyXGyroEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getStandbyYGyroEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YG_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YG_Pos, buffer);
     return buffer[0];
 }
 /** Set Y-axis gyroscope standby enabled status.
@@ -2853,7 +2857,7 @@ bool `$INSTANCE_NAME`_getStandbyYGyroEnabled(void)
  */
 void `$INSTANCE_NAME`_setStandbyYGyroEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YG_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_YG_Pos, enabled);
 }
 /** Get Z-axis gyroscope standby enabled status.
  * If enabled, the Z-axis will not gather or report data (or use power).
@@ -2863,7 +2867,7 @@ void `$INSTANCE_NAME`_setStandbyYGyroEnabled(bool enabled)
  */
 bool `$INSTANCE_NAME`_getStandbyZGyroEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZG_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZG_Pos, buffer);
     return buffer[0];
 }
 /** Set Z-axis gyroscope standby enabled status.
@@ -2874,7 +2878,7 @@ bool `$INSTANCE_NAME`_getStandbyZGyroEnabled(void)
  */
 void `$INSTANCE_NAME`_setStandbyZGyroEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZG_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_PWR_MGMT_2, `$INSTANCE_NAME`_PWR_MGMT_2_STBY_ZG_Pos, enabled);
 }
 
 // FIFO_COUNT* registers
@@ -2888,7 +2892,7 @@ void `$INSTANCE_NAME`_setStandbyZGyroEnabled(bool enabled)
  */
 uint16_t `$INSTANCE_NAME`_getFIFOCount(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_FIFO_COUNTH, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_FIFO_COUNTH, 2, buffer);
     return (((uint16_t)buffer[0]) << 8) | buffer[1];
 }
 
@@ -2921,13 +2925,13 @@ uint16_t `$INSTANCE_NAME`_getFIFOCount(void)
  */
 uint8_t `$INSTANCE_NAME`_getFIFOByte(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_FIFO_R_W, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_FIFO_R_W, buffer);
     return buffer[0];
 }
 
 void `$INSTANCE_NAME`_getFIFOBytes(uint8_t *data, uint8_t length)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_FIFO_R_W, length, data);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_FIFO_R_W, length, data);
 }
 /** Write byte to FIFO buffer.
  * @see getFIFOByte()
@@ -2935,7 +2939,7 @@ void `$INSTANCE_NAME`_getFIFOBytes(uint8_t *data, uint8_t length)
  */
 void `$INSTANCE_NAME`_setFIFOByte(uint8_t data)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_FIFO_R_W, data);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_FIFO_R_W, data);
 }
 
 // WHO_AM_I register
@@ -2949,7 +2953,7 @@ void `$INSTANCE_NAME`_setFIFOByte(uint8_t data)
  */
 uint8_t `$INSTANCE_NAME`_getDeviceID(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_WHO_AM_I, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Pos, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_WHO_AM_I, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Pos, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Len, buffer);
     return buffer[0];
 }
 /** Set Device ID.
@@ -2963,7 +2967,7 @@ uint8_t `$INSTANCE_NAME`_getDeviceID(void)
  */
 void `$INSTANCE_NAME`_setDeviceID(uint8_t id)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_WHO_AM_I, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Pos, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Len, id);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_WHO_AM_I, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Pos, `$INSTANCE_NAME`_WHO_AM_I_WHO_AM_I_Len, id);
 }
 
 // ======== UNDOCUMENTED/DMP REGISTERS/METHODS ========
@@ -2972,206 +2976,206 @@ void `$INSTANCE_NAME`_setDeviceID(uint8_t id)
 
 uint8_t `$INSTANCE_NAME`_getOTPBankValid(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OTP_BNK_VLD_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OTP_BNK_VLD_Pos, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setOTPBankValid(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OTP_BNK_VLD_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OTP_BNK_VLD_Pos, enabled);
 }
 int8_t `$INSTANCE_NAME`_getXGyroOffset(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setXGyroOffset(int8_t offset)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, offset);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_XG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, offset);
 }
 
 // YG_OFFS_TC register
 
 int8_t `$INSTANCE_NAME`_getYGyroOffset(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setYGyroOffset(int8_t offset)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, offset);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_YG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, offset);
 }
 
 // ZG_OFFS_TC register
 
 int8_t `$INSTANCE_NAME`_getZGyroOffset(void)
 {
-    `$INSTANCE_NAME`_ReadBits(devAddr, `$INSTANCE_NAME`_RA_ZG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, buffer);
+    `$INSTANCE_NAME`_ReadBits(`$INSTANCE_NAME`_RA_ZG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setZGyroOffset(int8_t offset)
 {
-    `$INSTANCE_NAME`_WriteBits(devAddr, `$INSTANCE_NAME`_RA_ZG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, offset);
+    `$INSTANCE_NAME`_WriteBits(`$INSTANCE_NAME`_RA_ZG_OFFS_TC, `$INSTANCE_NAME`_TC_OFFSET_Pos, `$INSTANCE_NAME`_TC_OFFSET_Len, offset);
 }
 
 // X_FINE_GAIN register
 
 int8_t `$INSTANCE_NAME`_getXFineGain(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_X_FINE_GAIN, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_X_FINE_GAIN, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setXFineGain(int8_t gain)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_X_FINE_GAIN, gain);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_X_FINE_GAIN, gain);
 }
 
 // Y_FINE_GAIN register
 
 int8_t `$INSTANCE_NAME`_getYFineGain(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_Y_FINE_GAIN, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_Y_FINE_GAIN, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setYFineGain(int8_t gain)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_Y_FINE_GAIN, gain);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_Y_FINE_GAIN, gain);
 }
 
 // Z_FINE_GAIN register
 
 int8_t `$INSTANCE_NAME`_getZFineGain(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_Z_FINE_GAIN, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_Z_FINE_GAIN, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setZFineGain(int8_t gain)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_Z_FINE_GAIN, gain);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_Z_FINE_GAIN, gain);
 }
 
 // XA_OFFS_* registers
 
 int16_t `$INSTANCE_NAME`_getXAccelOffset(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_XA_OFFS_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_XA_OFFS_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void `$INSTANCE_NAME`_setXAccelOffset(int16_t offset)
 {
-    `$INSTANCE_NAME`_WriteWord(devAddr, `$INSTANCE_NAME`_RA_XA_OFFS_H, offset);
+    `$INSTANCE_NAME`_WriteWord(`$INSTANCE_NAME`_RA_XA_OFFS_H, offset);
 }
 
 // YA_OFFS_* register
 
 int16_t `$INSTANCE_NAME`_getYAccelOffset(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_YA_OFFS_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_YA_OFFS_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void `$INSTANCE_NAME`_setYAccelOffset(int16_t offset)
 {
-    `$INSTANCE_NAME`_WriteWord(devAddr, `$INSTANCE_NAME`_RA_YA_OFFS_H, offset);
+    `$INSTANCE_NAME`_WriteWord(`$INSTANCE_NAME`_RA_YA_OFFS_H, offset);
 }
 
 // ZA_OFFS_* register
 
 int16_t `$INSTANCE_NAME`_getZAccelOffset(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ZA_OFFS_H, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ZA_OFFS_H, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void `$INSTANCE_NAME`_setZAccelOffset(int16_t offset)
 {
-    `$INSTANCE_NAME`_WriteWord(devAddr, `$INSTANCE_NAME`_RA_ZA_OFFS_H, offset);
+    `$INSTANCE_NAME`_WriteWord(`$INSTANCE_NAME`_RA_ZA_OFFS_H, offset);
 }
 
 // XG_OFFS_USR* registers
 
 int16_t `$INSTANCE_NAME`_getXGyroOffsetUser(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_XG_OFFS_USRH, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_XG_OFFS_USRH, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void `$INSTANCE_NAME`_setXGyroOffsetUser(int16_t offset)
 {
-    `$INSTANCE_NAME`_WriteWord(devAddr, `$INSTANCE_NAME`_RA_XG_OFFS_USRH, offset);
+    `$INSTANCE_NAME`_WriteWord(`$INSTANCE_NAME`_RA_XG_OFFS_USRH, offset);
 }
 
 // YG_OFFS_USR* register
 
 int16_t `$INSTANCE_NAME`_getYGyroOffsetUser(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_YG_OFFS_USRH, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_YG_OFFS_USRH, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void `$INSTANCE_NAME`_setYGyroOffsetUser(int16_t offset)
 {
-    `$INSTANCE_NAME`_WriteWord(devAddr, `$INSTANCE_NAME`_RA_YG_OFFS_USRH, offset);
+    `$INSTANCE_NAME`_WriteWord(`$INSTANCE_NAME`_RA_YG_OFFS_USRH, offset);
 }
 
 // ZG_OFFS_USR* register
 
 int16_t `$INSTANCE_NAME`_getZGyroOffsetUser(void)
 {
-    `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_ZG_OFFS_USRH, 2, buffer);
+    `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_ZG_OFFS_USRH, 2, buffer);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void `$INSTANCE_NAME`_setZGyroOffsetUser(int16_t offset)
 {
-    `$INSTANCE_NAME`_WriteWord(devAddr, `$INSTANCE_NAME`_RA_ZG_OFFS_USRH, offset);
+    `$INSTANCE_NAME`_WriteWord(`$INSTANCE_NAME`_RA_ZG_OFFS_USRH, offset);
 }
 
 // INT_ENABLE register (DMP functions)
 
 bool `$INSTANCE_NAME`_getIntPLLReadyEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_PLL_RDY_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_PLL_RDY_INT_Pos, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setIntPLLReadyEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_PLL_RDY_INT_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_PLL_RDY_INT_Pos, enabled);
 }
 bool `$INSTANCE_NAME`_getIntDMPEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DMP_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DMP_INT_Pos, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setIntDMPEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DMP_INT_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_INT_ENABLE, `$INSTANCE_NAME`_INT_ENABLE_DMP_INT_Pos, enabled);
 }
 
 // DMP_INT_STATUS
 
 bool `$INSTANCE_NAME`_getDMPInt5Status(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_5_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_5_Pos, buffer);
     return buffer[0];
 }
 bool `$INSTANCE_NAME`_getDMPInt4Status(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_4_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_4_Pos, buffer);
     return buffer[0];
 }
 bool `$INSTANCE_NAME`_getDMPInt3Status(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_3_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_3_Pos, buffer);
     return buffer[0];
 }
 bool `$INSTANCE_NAME`_getDMPInt2Status(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_2_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_2_Pos, buffer);
     return buffer[0];
 }
 bool `$INSTANCE_NAME`_getDMPInt1Status(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_1_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_1_Pos, buffer);
     return buffer[0];
 }
 bool `$INSTANCE_NAME`_getDMPInt0Status(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_0_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_DMP_INT_STATUS, `$INSTANCE_NAME`_DMP_INT_STATUS_0_Pos, buffer);
     return buffer[0];
 }
 
@@ -3179,12 +3183,12 @@ bool `$INSTANCE_NAME`_getDMPInt0Status(void)
 
 bool `$INSTANCE_NAME`_getIntPLLReadyStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_ENABLE_PLL_RDY_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_ENABLE_PLL_RDY_INT_Pos, buffer);
     return buffer[0];
 }
 bool `$INSTANCE_NAME`_getIntDMPStatus(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_ENABLE_DMP_INT_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_INT_STATUS, `$INSTANCE_NAME`_INT_ENABLE_DMP_INT_Pos, buffer);
     return buffer[0];
 }
 
@@ -3192,16 +3196,16 @@ bool `$INSTANCE_NAME`_getIntDMPStatus(void)
 
 bool `$INSTANCE_NAME`_getDMPEnabled(void)
 {
-    `$INSTANCE_NAME`_ReadBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_DMP_EN_Pos, buffer);
+    `$INSTANCE_NAME`_ReadBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_DMP_EN_Pos, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setDMPEnabled(bool enabled)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_DMP_EN_Pos, enabled);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_DMP_EN_Pos, enabled);
 }
 void `$INSTANCE_NAME`_resetDMP(void)
 {
-    `$INSTANCE_NAME`_WriteBit(devAddr, `$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_DMP_RESET_Pos, true);
+    `$INSTANCE_NAME`_WriteBit(`$INSTANCE_NAME`_RA_USER_CTRL, `$INSTANCE_NAME`_USER_CTRL_DMP_RESET_Pos, true);
 }
 
 // BANK_SEL register
@@ -3211,26 +3215,26 @@ void `$INSTANCE_NAME`_setMemoryBank(uint8_t bank, bool prefetchEnabled, bool use
     bank &= 0x1F;
     if (userBank) bank |= 0x20;
     if (prefetchEnabled) bank |= 0x40;
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_BANK_SEL, bank);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_BANK_SEL, bank);
 }
 
 // MEM_START_ADDR register
 
 void `$INSTANCE_NAME`_setMemoryStartAddress(uint8_t address)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_MEM_START_ADDR, address);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_MEM_START_ADDR, address);
 }
 
 // MEM_R_W register
 
 uint8_t `$INSTANCE_NAME`_readMemoryByte(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_MEM_R_W, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_MEM_R_W, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_writeMemoryByte(uint8_t data)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_MEM_R_W, data);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_MEM_R_W, data);
 }
 void `$INSTANCE_NAME`_readMemoryBlock(uint8_t *data, uint16_t dataSize, uint8_t bank, uint8_t address)
 {
@@ -3249,7 +3253,7 @@ void `$INSTANCE_NAME`_readMemoryBlock(uint8_t *data, uint16_t dataSize, uint8_t 
         if (chunkSize > 256 - address) chunkSize = 256 - address;
 
         // read the chunk of data as specified
-        `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_MEM_R_W, chunkSize, data + i);
+        `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_MEM_R_W, chunkSize, data + i);
         
         // increase byte index by [chunkSize]
         i += chunkSize;
@@ -3295,13 +3299,13 @@ bool `$INSTANCE_NAME`_writeMemoryBlock(const uint8_t *data, uint16_t dataSize, u
             progBuffer = (uint8_t *)data + i;
         }
 
-        `$INSTANCE_NAME`_WriteBytes(devAddr, `$INSTANCE_NAME`_RA_MEM_R_W, chunkSize, progBuffer);
+        `$INSTANCE_NAME`_WriteBytes(`$INSTANCE_NAME`_RA_MEM_R_W, chunkSize, progBuffer);
 
         // verify data if needed
         if (verify && verifyBuffer) {
             setMemoryBank(bank);
             setMemoryStartAddress(address);
-            `$INSTANCE_NAME`_ReadBytes(devAddr, `$INSTANCE_NAME`_RA_MEM_R_W, chunkSize, verifyBuffer);
+            `$INSTANCE_NAME`_ReadBytes(`$INSTANCE_NAME`_RA_MEM_R_W, chunkSize, verifyBuffer);
             if (memcmp(progBuffer, verifyBuffer, chunkSize) != 0) {
                 /*Serial.print("Block write verification error, bank ");
                 Serial.print(bank, DEC);
@@ -3406,7 +3410,7 @@ bool `$INSTANCE_NAME`_writeDMPConfigurationSet(const uint8_t *data, uint16_t dat
                 //setIntZeroMotionEnabled(true);
                 //setIntFIFOBufferOverflowEnabled(true);
                 //setIntDMPEnabled(true);
-                `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_INT_ENABLE, 0x32);  // single operation
+                `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_INT_ENABLE, 0x32);  // single operation
 
                 success = true;
             } else {
@@ -3433,24 +3437,24 @@ bool `$INSTANCE_NAME`_writeProgDMPConfigurationSet(const uint8_t *data, uint16_t
 
 uint8_t `$INSTANCE_NAME`_getDMPConfig1(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_DMP_CFG_1, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_DMP_CFG_1, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setDMPConfig1(uint8_t config)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_DMP_CFG_1, config);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_DMP_CFG_1, config);
 }
 
 // DMP_CFG_2 register
 
 uint8_t `$INSTANCE_NAME`_getDMPConfig2(void)
 {
-    `$INSTANCE_NAME`_ReadByte(devAddr, `$INSTANCE_NAME`_RA_DMP_CFG_2, buffer);
+    `$INSTANCE_NAME`_ReadByte(`$INSTANCE_NAME`_RA_DMP_CFG_2, buffer);
     return buffer[0];
 }
 void `$INSTANCE_NAME`_setDMPConfig2(uint8_t config)
 {
-    `$INSTANCE_NAME`_WriteByte(devAddr, `$INSTANCE_NAME`_RA_DMP_CFG_2, config);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_DMP_CFG_2, config);
 }
 
 #define BIT_I2C_READ                (0x80)
@@ -3473,26 +3477,26 @@ void `$INSTANCE_NAME`_setup_compass(void)
 	//    mpu.setSlaveAddress(1,`$INSTANCE_NAME`_ADDRESS_COMPASS);
 
     /* Set up master mode, master clock, and ES bit. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_MST_CTRL, 0x40);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_MST_CTRL, 0x40);
     /* Slave 0 reads from AKM data registers. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_SLV0_ADDR, BIT_I2C_READ | `$INSTANCE_NAME`_ADDRESS_COMPASS);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV0_ADDR, BIT_I2C_READ | `$INSTANCE_NAME`_ADDRESS_COMPASS);
     /* Compass reads start at this register, the first data register. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_SLV0_REG, AKM_REG_HXL);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV0_REG, AKM_REG_HXL);
     /* Enable slave 0, 6-byte reads. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_SLV0_CTRL, BIT_SLAVE_EN | 6);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV0_CTRL, BIT_SLAVE_EN | 6);
     /* Slave 1 changes AKM measurement mode. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_SLV1_ADDR, `$INSTANCE_NAME`_ADDRESS_COMPASS);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV1_ADDR, `$INSTANCE_NAME`_ADDRESS_COMPASS);
     /* AKM measurement mode register. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_SLV1_REG, AKM_REG_CNTL);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV1_REG, AKM_REG_CNTL);
     /* Enable slave 1, 1-byte writes. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_SLV1_CTRL, BIT_SLAVE_EN | 1);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV1_CTRL, BIT_SLAVE_EN | 1);
     /* Set slave 1 data. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_SLV1_DO,AKM_SINGLE_MEASUREMENT);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_SLV1_DO,AKM_SINGLE_MEASUREMENT);
     /* Trigger slave 0 and slave 1 actions at each sample. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, 0x03);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_I2C_MST_DELAY_CTRL, 0x03);
 #ifdef MPU9150
     /* For the MPU9150, the auxiliary I2C bus needs to be set to VDD. */
-    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_DEFAULT_ADDRESS, `$INSTANCE_NAME`_RA_YG_OFFS_TC, BIT_I2C_MST_VDDIO);
+    `$INSTANCE_NAME`_WriteByte(`$INSTANCE_NAME`_RA_YG_OFFS_TC, BIT_I2C_MST_VDDIO);
 #endif
     //enable I2C Master Mode
     `$INSTANCE_NAME`_setI2CMasterModeEnabled(true);

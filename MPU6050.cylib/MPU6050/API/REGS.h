@@ -95,6 +95,11 @@
 #define `$INSTANCE_NAME`_RA_FIFO_COUNTH     0x72
 #define `$INSTANCE_NAME`_RA_FIFO_COUNTL     0x73
 #define `$INSTANCE_NAME`_RA_FIFO_R_W        0x74
+// The contents of WHO_AM_I are the upper 6 bits of the
+// MPU60X0 7bit I2C address.
+// The default value of the register is 0x68
+// Bits 0 and 7 are hard coded to 0
+// PoR value of bit6:bit1 is 110_100
 #define `$INSTANCE_NAME`_RA_WHO_AM_I        0x75
 
 /* Undocumented Registers */
