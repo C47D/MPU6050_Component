@@ -29,14 +29,14 @@ void `$INSTANCE_NAME`_ReadBytes(uint8_t regAddr, uint8_t length, uint8_t *value)
 {
 	uint8_t i = 0;
 #if defined(CY_SCB_`$I2C_INSTANCE`_H) // I2C based in the SCB block
-	`$I2C_INSTANCE`_I2CMasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_WRITE_XFER_MODE);
-	`$I2C_INSTANCE`_I2CMasterWriteByte(regAddr);
-	`$I2C_INSTANCE`_I2CMasterSendRestart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_READ_XFER_MODE);
+	`$I2C_INSTANCE`_I2CMasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_WRITE_XFER_MODE, 0);
+	`$I2C_INSTANCE`_I2CMasterWriteByte(regAddr, 0);
+	`$I2C_INSTANCE`_I2CMasterSendRestart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_READ_XFER_MODE, 0);
 	while (i++ < (length-1)) {
-		*value++ = `$I2C_INSTANCE`_I2CMasterReadByte(`$I2C_INSTANCE`_I2C_ACK_DATA);
+		*value++ = `$I2C_INSTANCE`_I2CMasterReadByte(`$I2C_INSTANCE`_I2C_ACK_DATA, 0);
 	}
-	*value = `$I2C_INSTANCE`_I2CMasterReadByte(`$I2C_INSTANCE`_I2C_NAK_DATA);
-	`$I2C_INSTANCE`_I2CMasterSendStop();
+	*value = `$I2C_INSTANCE`_I2CMasterReadByte(`$I2C_INSTANCE`_I2C_NAK_DATA, 0);
+	`$I2C_INSTANCE`_I2CMasterSendStop(0);
 #else // I2C Based on UDB blocks
     `$I2C_INSTANCE`_MasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_WRITE_XFER_MODE);
 	`$I2C_INSTANCE`_MasterWriteByte(regAddr);
@@ -72,12 +72,12 @@ void `$INSTANCE_NAME`_WriteBytes(uint8_t regAddr, uint8_t length, uint8_t *value
 {
 	uint8_t i = 0;
 #if defined(CY_SCB_`$I2C_INSTANCE`_H) // I2C based in the SCB block
-	`$I2C_INSTANCE`_I2CMasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_WRITE_XFER_MODE);
-	`$I2C_INSTANCE`_I2CMasterWriteByte(regAddr);
+	`$I2C_INSTANCE`_I2CMasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_WRITE_XFER_MODE, 0);
+	`$I2C_INSTANCE`_I2CMasterWriteByte(regAddr, 0);
 	while (i++ < length) {
-		`$I2C_INSTANCE`_I2CMasterWriteByte(*value++);
+		`$I2C_INSTANCE`_I2CMasterWriteByte(*value++, 0);
 	}
-	`$I2C_INSTANCE`_I2CMasterSendStop();	
+	`$I2C_INSTANCE`_I2CMasterSendStop(0);
 #else
     `$I2C_INSTANCE`_MasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_WRITE_XFER_MODE);
 	`$I2C_INSTANCE`_MasterWriteByte(regAddr);
@@ -119,13 +119,13 @@ void `$INSTANCE_NAME`_WriteWords(uint8_t regAddr, uint8_t length, uint16_t *valu
 {
 	uint8_t i = 0;
 #if defined(CY_SCB_`$I2C_INSTANCE`_H) // I2C based in the SCB block
-	`$I2C_INSTANCE`_I2CMasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_WRITE_XFER_MODE);
-	`$I2C_INSTANCE`_I2CMasterWriteByte(regAddr);
+	`$I2C_INSTANCE`_I2CMasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_I2C_WRITE_XFER_MODE, 0);
+	`$I2C_INSTANCE`_I2CMasterWriteByte(regAddr, 0);
 	while (i++ < length) {
-		`$I2C_INSTANCE`_I2CMasterWriteByte(((uint8_t)*value) >> 8);
-		`$I2C_INSTANCE`_I2CMasterWriteByte((uint8_t)*value++);
+		`$I2C_INSTANCE`_I2CMasterWriteByte(((uint8_t)*value) >> 8, 0);
+		`$I2C_INSTANCE`_I2CMasterWriteByte((uint8_t)*value++, 0);
 	}
-	`$I2C_INSTANCE`_I2CMasterSendStop();
+	`$I2C_INSTANCE`_I2CMasterSendStop(0);
 #else
     `$I2C_INSTANCE`_MasterSendStart(`$INSTANCE_NAME`_devAddr, `$I2C_INSTANCE`_WRITE_XFER_MODE);
 	`$I2C_INSTANCE`_MasterWriteByte(regAddr);
